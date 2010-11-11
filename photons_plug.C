@@ -570,8 +570,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 		{
 			psr->obsn[i].deleted = 0;
 			psr->obsn[i].nFlags = 0;
-			psr->obsn[i].delayCorr = 1;	// Correct delays for event i
-			psr->obsn[i].clockCorr = 1;	// Also make clock correction TT -> TDB
+			psr->obsn[i].delayCorr = 0;	// Don't correct delays for event i
+			psr->obsn[i].clockCorr = 0;	// Don't make clock correction TT -> TDB
 
 			// Position replacements
 			for (k=0;k<3;k++) 
@@ -583,6 +583,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
 		/* ------------------------------------------------- //
 		// Calculation of the event phases - step 1
+                // Step 1 is for all but the last photon
 		// ------------------------------------------------- */
 
 		// keep track of the last TOA before shifting the others
@@ -606,11 +607,15 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 		psr->obsn[0].nFlags = 0;
 		psr->obsn[0].delayCorr = 0;
 		psr->obsn[0].clockCorr = 0;
+                printf("%20.15Lf\t%20.15Lf\n", psr->obsn[0].sat, psr->obsn[0].bat);
+                printf("%20.15Lf\t%20.15Lf\n", psr->obsn[1].sat, psr->obsn[1].bat);
 		
 		// ------------------------------------------------- //
 		// Form barycentric arrival times - step 1
 		// ------------------------------------------------- //
-		formBatsAll_fermi(psr,*npsr);
+		formBatsAll(psr,*npsr);
+                printf("%20.15Lf\t%20.15Lf\n", psr->obsn[0].sat, psr->obsn[0].bat);
+                printf("%20.15Lf\t%20.15Lf\n", psr->obsn[1].sat, psr->obsn[1].bat);
 
 		// ------------------------------------------------- //
 		// Calculate event phases - step 1
@@ -652,9 +657,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 				
 			if (output_file)
 			{
-				if (graph == 0)	fprintf(outputf,"%d\t",event + rows_status);
-				else fprintf(outputf,"%d\t",event + 1);
-			
+				fprintf(outputf,"%d\t",event + rows_status);
 				fprintf(outputf,"%20.15Lf %12.10le\n",psr[0].obsn[i].bat,phase[event]);
 			}
 	
@@ -663,6 +666,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
 		// ------------------------------------------------- //
 		// Calculation of the event phases - step 2
+                // Step 2 repeats the above code for the last photon
 		// ------------------------------------------------- //
 		psr[0].obsn[1].sat = lasttime;
 		for (k=0;k<3;k++) psr[0].obsn[1].observatory_earth[k] = lastpos[k];
@@ -710,9 +714,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
 		if (output_file)
 		{
-			if (graph == 0)	fprintf(outputf,"%d\t",event + rows_status);
-			else fprintf(outputf,"%d\t",event + 1);
-			
+			fprintf(outputf,"%d\t",event + rows_status);
 			fprintf(outputf,"%20.15Lf %12.10le\n",psr[0].obsn[1].bat,phase[event]);
 		}
 
@@ -744,14 +746,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 		rows_left	= nrows_FT1 - rows_status + 1;
 		nrows2 		= min(rows_left,max_rows);
 		
-		if (graph == 0)
-		{
-			event = 0;
-		}
-		else
-		{
-			event++;
-		}
+                event = 0;
 	}
         
     // ------------------------------------------------- //
