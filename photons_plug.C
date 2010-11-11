@@ -17,24 +17,6 @@ static char random_letter(int is_cap);
 static char random_number();
 static void random_string(int length, char *str);
 
-// met2mjd: conversion of Mission Elapsed Time in TT to MJD
-double met2mjd(double met)
-{
-    double mjd_ref = 51910.0007428703703703703; 
-    double mjd = mjd_ref + met / 86400.;
-    
-    return mjd;
-}
-
-// mjd2met : conversion of MJD in TT to Mission Elapsed Time
-double mjd2met(double mjd)
-{
-    double mjd_ref = 51910.0007428703703703703;
-    double met = 86400. * (mjd - mjd_ref);
-    
-    return met;
-}
-
 double inner_product(double vect_x[], double vect_y[])
 {
     return vect_x[0]*vect_y[0] + vect_x[1]*vect_y[1] + vect_x[2]*vect_y[2];
@@ -121,10 +103,12 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     // Time and satellite position definitions
     // ------------------------------------------------- */
 
+    longdouble mjd_ref = 51910.0007428703703703703; 
     double temptime;
     double minFT1time = 999999999., maxFT1time = 0.;
     
-    double time_MET_TT[max_rows], time_MJD_TT;
+    double time_MET_TT[max_rows];
+    longdouble time_MJD_TT;
     double obs_earth[max_rows][3];
 
     double sctime1 = 0., sctime2 = 0.;
@@ -239,6 +223,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         int kw_status;
         char value[80];
         char comment[80];
+        double mjd_ref_t;
         fits_read_key(ft1, TSTRING, "TIMESYS", 
                 (void*)value, comment, &kw_status);
         if (kw_status>0) {
@@ -260,6 +245,23 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
                 fprintf(stderr,"Error: TIMEREF is %s rather than SOLARSYSTEM\n", value);
                 exit(2);
             }
+        }
+
+        fits_read_key(ft1, TDOUBLE, "MJDREFI", 
+                (void*)&mjd_ref_t, comment, &kw_status);
+        if (kw_status>0) {
+            fits_report_error(stderr, kw_status);
+            fprintf(stderr,"Warning: MJDREFI not found, using Fermi reference MJD\n");
+        } else {
+            mjd_ref = mjd_ref_t;
+        }
+        fits_read_key(ft1, TDOUBLE, "MJDREFF", 
+                (void*)&mjd_ref_t, comment, &kw_status);
+        if (kw_status>0) {
+            fits_report_error(stderr, kw_status);
+            fprintf(stderr,"Warning: MJDREFF not found, using Fermi reference MJD\n");
+        } else {
+            mjd_ref += mjd_ref_t;
         }
 
 
@@ -404,8 +406,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
         for (i=0;i<nrows2;i++)
         {
-            time_MJD_TT = met2mjd(time_MET_TT[i]);      
-            fprintf(temp_tim," photons 0.0 %.12lf 0.00000 BAT\n",time_MJD_TT);
+            time_MJD_TT = time_MET_TT[i]/86400.+mjd_ref;      
+            fprintf(temp_tim," photons 0.0 %.12Lf 0.00000 BAT\n",time_MJD_TT);
         }
 
         fclose(temp_tim);
