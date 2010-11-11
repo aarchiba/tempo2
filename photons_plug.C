@@ -89,6 +89,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     // ------------------------------------------------- */
 
     longdouble mjd_ref = 51910.0007428703703703703; 
+    int mjd_ref_set = 0;
     double temptime;
     double minFT1time = 999999999., maxFT1time = 0.;
     
@@ -214,6 +215,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         char value[80];
         char comment[80];
         double mjd_ref_t;
+        int mjdi = 0;
         fits_read_key(ft1, TSTRING, "TIMESYS", 
                 (void*)value, comment, &kw_status);
         if (kw_status>0) {
@@ -237,21 +239,32 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
             }
         }
 
+        fits_read_key(ft1, TDOUBLE, "MJDREF", 
+                (void*)&mjd_ref_t, comment, &kw_status);
+        if (kw_status<=0) {
+            mjd_ref = mjd_ref_t;
+            mjd_ref_set = 1;
+        }
         fits_read_key(ft1, TDOUBLE, "MJDREFI", 
                 (void*)&mjd_ref_t, comment, &kw_status);
-        if (kw_status>0) {
-            fits_report_error(stderr, kw_status);
-            fprintf(stderr,"Warning: MJDREFI not found, using Fermi reference MJD\n");
-        } else {
+        if (kw_status<=0) {
             mjd_ref = mjd_ref_t;
+            mjd_ref_set = 0; // Just the integer part doesn't set it
+            mjdi = 1;
         }
         fits_read_key(ft1, TDOUBLE, "MJDREFF", 
                 (void*)&mjd_ref_t, comment, &kw_status);
-        if (kw_status>0) {
-            fits_report_error(stderr, kw_status);
-            fprintf(stderr,"Warning: MJDREFF not found, using Fermi reference MJD\n");
-        } else {
+        if (kw_status<=0) {
+            if (mjdi) {
+                fprintf(stderr,"Error: MJDREFF found, but MJDREFI missing\n");
+                exit(2);
+            }
             mjd_ref += mjd_ref_t;
+            mjd_ref_set = 1; // 
+        }
+        if (!mjd_ref_set) {
+            fprintf(stderr,"Error: MJDREF or MJDREFI/MJDREFF not found\n");
+            exit(3);
         }
 
 
