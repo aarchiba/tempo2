@@ -205,7 +205,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         printf("\t tempo2 -gr photons -ft1 FT1.fits -f par.par\n");
         printf("More options are available. If you need help, please type:\n");
         printf("\t tempo2 -gr photons -h\n");
-        exit(0);
+        exit(1);
     }
     if (!par_file)
     {
@@ -214,7 +214,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         printf("\t tempo2 -gr photons -ft1 FT1.fits -f par.par\n");
         printf("More options are available. If you need help, please type:\n");
         printf("\t tempo2 -gr photons -h\n");
-        exit(0);
+        exit(1);
     }
     if (output_file)
     {
@@ -236,6 +236,33 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         // FIXME: make sure it's TIMESYS==TDB and ??==SOLARSYSTEM
     if (!fits_open_file(&ft1,FT1, READWRITE, &open_status))
     {
+        int kw_status;
+        char value[80];
+        char comment[80];
+        fits_read_key(ft1, TSTRING, "TIMESYS", 
+                (void*)value, comment, &kw_status);
+        if (kw_status>0) {
+            fits_report_error(stderr, kw_status);
+            fprintf(stderr,"Assuming TIMESYS is TDB\n");
+        } else {
+            if (strcmp(value,"TDB")) {
+                fprintf(stderr,"Error: TIMESYS is %s rather than TDB; input file has not been barycentered\n", value);
+                exit(2);
+            }
+        }
+        fits_read_key(ft1, TSTRING, "TIMEREF", 
+                (void*)value, comment, &kw_status);
+        if (kw_status>0) {
+            fits_report_error(stderr, kw_status);
+            fprintf(stderr,"Warning: assuming TIMEREF is SOLARSYSTEM\n");
+        } else {
+            if (strcmp(value,"SOLARSYSTEM")) {
+                fprintf(stderr,"Error: TIMEREF is %s rather than SOLARSYSTEM\n", value);
+                exit(2);
+            }
+        }
+
+
 
         fits_movabs_hdu(ft1,2,NULL,&status);
 
