@@ -8,11 +8,6 @@
 
 using namespace std;        /* Is this required for a plugin ? Yes, for Linux */
 
-void extra_delays_fermi(pulsar *psr,int npsr);
-void clock_corrections_fermi(pulsar *psr,int npsr);
-void ephemeris_routines_fermi(pulsar *psr,int npsr);
-void formBatsAll_fermi(pulsar *psr,int npsr);
-
 static char random_letter(int is_cap);
 static char random_number();
 static void random_string(int length, char *str);
@@ -624,50 +619,6 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
 
 
-
-/* ------------------------------------------------- //
-// Barycentering tools
-// ------------------------------------------------- */
-
-void clock_corrections_fermi(pulsar *psr,int npsr)
-{
-	// toa2utc(psr,npsr);                      // UTC(Observatory) -> UTC(NIST) 
-	// tai2ut1(psr,npsr);                      // TAI -> UT1			 
-	tt2tb(psr,npsr);                        // Rough estimate of TT-TB (+-2.2 microsec) 
-}
-
-void ephemeris_routines_fermi(pulsar *psr,int npsr)
-{
-	vectorPulsar(psr,npsr);                 // Form a vector pointing at the pulsar 
-	readEphemeris(psr,npsr,0);              // Read the ephemeris 
-	// get_obsCoord(psr,npsr);                 // Get Coordinate of observatory relative to Earth's centre 
-	tt2tb(psr,npsr);                        // Observatory/time-dependent part of TT-TB 
-	readEphemeris(psr,npsr,0);              // Re-evaluate ephemeris with correct TB 
-}
-
-void extra_delays_fermi(pulsar *psr,int npsr)
-{
-	calculate_bclt(psr,npsr);               // Calculate bclt
-}
-
-void formBatsAll_fermi(pulsar *psr,int npsr)
-{
-	clock_corrections_fermi(psr,npsr);            	// Clock corrections  ... 
-	
-	//	printf("Reading ephemeris routines...\n");
-	ephemeris_routines_fermi(psr,npsr);           	// Ephemeris routines ... 
-	
-	//	printf("Reading extra delays...\n");
-	extra_delays_fermi(psr,npsr);                 	// Other time delays  ... 
-	
-	//	printf("Forming barycentric arrival times...\n");
-	formBats(psr,npsr);                     	// Form Barycentric arrival times 
-	
-	//	printf("Evaluating secular motion...\n");
-	secularMotion(psr,npsr);
-}
-
-//
 
 
 
