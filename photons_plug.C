@@ -82,7 +82,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
     int FT1_time_col,FT1_phase_col;
     int nrows2, rows_status, rows_left;
-    int max_rows = 10000;
+    int max_rows = MAX_OBSN_VAL - 100;
 
     /* ------------------------------------------------- //
     // Time and satellite position definitions
@@ -93,8 +93,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     double temptime;
     double minFT1time = 999999999., maxFT1time = 0.;
     
-    double time_MET_TT[max_rows];
-    longdouble time_MJD_TT;
+    double time_MET_TDB[max_rows];
+    longdouble time_MJD_TDB;
     double obs_earth[max_rows][3];
 
     double sctime1 = 0., sctime2 = 0.;
@@ -128,16 +128,19 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         {
             par_file = 1;
             strcpy(parFile[0],argv[i+1]); 
+            i++;
         }
         else if (strcmp(argv[i],"-ft1")==0)
         {
             FT1_file = 1;
             strcpy(FT1,argv[i+1]);
+            i++;
         }
         else if (strcmp(argv[i],"-output")==0)
         {
             output_file = 1;
             strcpy(output,argv[i+1]);
+            i++;
         }
         else if (strcmp(argv[i],"-phase")==0)
         {
@@ -150,10 +153,18 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         else if (strcmp(argv[i],"-col")==0)
         {
             strcpy(phasecol,argv[i+1]);
+            i++;
         }   
         else if (strcmp(argv[i],"-timecol")==0)
         {
             strcpy(timecol,argv[i+1]);
+            i++;
+        }   
+        else if (strcmp(argv[i],"-mjdref")==0)
+        {
+            sscanf(argv[i+1],"%Lf",&mjd_ref);
+            mjd_ref_set = 1;
+            i++;
         }   
         else if (strcmp(argv[i],"-h")==0)
         {
@@ -167,6 +178,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
             printf("\t -ophase: will calculate orbital phases instead of pulse phases. Changes default column name to ORBITAL_PHASE.\n");
             printf("\t -col XXX: phases will be stored in column XXX. Default is PULSE_PHASE\n");
             printf("\t -timecol XXX: times will be read from column XXX. Default is TIME\n");
+            printf("\t -mjdref XXX: use XXX as MJDREF instead of looking in header\n");
             printf("\t -h: this help.\n");
             printf("===============================================");
             printf("===============================================\n");
@@ -232,6 +244,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         if (kw_status>0) {
             fits_report_error(stderr, kw_status);
             fprintf(stderr,"Warning: assuming TIMEREF is SOLARSYSTEM\n");
+            kw_status=0; // Must reset kw_status or future successes will look like failures
         } else {
             if (strcmp(value,"SOLARSYSTEM")) {
                 fprintf(stderr,"Error: TIMEREF is %s rather than SOLARSYSTEM\n", value);
@@ -239,34 +252,44 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
             }
         }
 
-        fits_read_key(ft1, TDOUBLE, "MJDREF", 
-                (void*)&mjd_ref_t, comment, &kw_status);
-        if (kw_status<=0) {
-            mjd_ref = mjd_ref_t;
-            mjd_ref_set = 1;
-        }
-        fits_read_key(ft1, TDOUBLE, "MJDREFI", 
-                (void*)&mjd_ref_t, comment, &kw_status);
-        if (kw_status<=0) {
-            mjd_ref = mjd_ref_t;
-            mjd_ref_set = 0; // Just the integer part doesn't set it
-            mjdi = 1;
-        }
-        fits_read_key(ft1, TDOUBLE, "MJDREFF", 
-                (void*)&mjd_ref_t, comment, &kw_status);
-        if (kw_status<=0) {
-            if (mjdi) {
-                fprintf(stderr,"Error: MJDREFF found, but MJDREFI missing\n");
-                exit(2);
+        if (!mjd_ref_set) {
+            fits_read_key(ft1, TDOUBLE, "MJDREFI", 
+                    (void*)&mjd_ref_t, comment, &kw_status);
+            if (kw_status<=0) {
+                mjd_ref = mjd_ref_t;
+                mjd_ref_set = 0; // Just the integer part doesn't set it
+                mjdi = 1;
+            } else {
+                fits_report_error(stderr, kw_status);
+                kw_status=0; // Must reset kw_status or future successes will look like failures
             }
-            mjd_ref += mjd_ref_t;
-            mjd_ref_set = 1; // 
+            fits_read_key(ft1, TDOUBLE, "MJDREFF", 
+                    (void*)&mjd_ref_t, comment, &kw_status);
+            if (kw_status<=0) {
+                if (!mjdi) {
+                    fprintf(stderr,"Error: MJDREFF found, but MJDREFI missing\n");
+                    exit(2);
+                }
+                mjd_ref += mjd_ref_t;
+                mjd_ref_set = 1; // 
+            } else {
+                fits_report_error(stderr, kw_status);
+            }
         }
         if (!mjd_ref_set) {
-            fprintf(stderr,"Error: MJDREF or MJDREFI/MJDREFF not found\n");
+            fits_read_key(ft1, TDOUBLE, "MJDREF", 
+                    (void*)&mjd_ref_t, comment, &kw_status);
+            if (kw_status<=0) {
+                mjd_ref = mjd_ref_t;
+                mjd_ref_set = 1;
+            } else {
+                kw_status=0; // Must reset kw_status or future successes will look like failures
+            }
+        }
+        if (!mjd_ref_set) {
+            fprintf(stderr,"Error: MJDREF or MJDREFI/MJDREFF not found; try specifying -mjdref\n");
             exit(3);
         }
-
 
 
         fits_movabs_hdu(ft1,2,NULL,&status);
@@ -316,8 +339,9 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
     fits_close_file(ft1, &status);
 
-    printf("First photon date in FT1: %lf MET (s)\n",minFT1time);
-    printf(" Last photon date in FT1: %lf MET (s)\n\n",maxFT1time);
+    printf("MJDREF: %Lf\n",mjd_ref);
+    printf("First photon date in FT1: %lf MET (s), MJD %Lf\n",minFT1time,minFT1time/86400.+mjd_ref);
+    printf(" Last photon date in FT1: %lf MET (s), MJD %Lf\n\n",maxFT1time,maxFT1time/86400.+mjd_ref);
     
     // The FT1 file is cut into small tim files with # rows <= 10000
 
@@ -386,7 +410,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     {
         printf("Treating events # %d to %d... \n",rows_status,rows_status + nrows2 - 1);
 
-        // Acquisition of the non-barycentered TOAs in MET TT
+        // Acquisition of the TOAs in MET TDB
         j = 0;
 
         if (!fits_open_file(&ft1,FT1, READONLY, &status))
@@ -395,7 +419,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
             for (i=rows_status;i<rows_status + nrows2;i++)
             {
-                fits_read_col_dbl(ft1,FT1_time_col,i,1,1,nulval,&time_MET_TT[j],&anynul,&status);
+                fits_read_col_dbl(ft1,FT1_time_col,i,1,1,nulval,&time_MET_TDB[j],&anynul,&status);
                 j++;
             }
         }
@@ -409,8 +433,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
         for (i=0;i<nrows2;i++)
         {
-            time_MJD_TT = time_MET_TT[i]/86400.+mjd_ref;      
-            fprintf(temp_tim," photons 0.0 %.12Lf 0.00000 BAT\n",time_MJD_TT);
+            time_MJD_TDB = time_MET_TDB[i]/86400.+mjd_ref;      
+            fprintf(temp_tim," photons 0.0 %.12Lf 0.00000 @\n",time_MJD_TDB);
         }
 
         fclose(temp_tim);
@@ -425,24 +449,25 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         /* ------------------------------------------------- //
         // Delays, corrections and positions
         // ------------------------------------------------- */
-        for (i=0;i<nrows2;i++)
-        {
-            psr->obsn[i].deleted = 0;
-            psr->obsn[i].nFlags = 0;
-            psr->obsn[i].delayCorr = 0; // Don't correct delays for event i
-            psr->obsn[i].clockCorr = 0; // Don't make clock correction TT -> TDB
-
-            // Position replacements
-            for (k=0;k<3;k++) 
+        if (0) {
+            for (i=0;i<nrows2;i++)
             {
-                psr[0].obsn[i].observatory_earth[k] = 0;
+                psr->obsn[i].deleted = 0;
+                psr->obsn[i].nFlags = 0;
+                psr->obsn[i].delayCorr = 0; // Don't correct delays for event i
+                psr->obsn[i].clockCorr = 0; // Don't make clock correction TT -> TDB
+
+                // Position replacements
+                for (k=0;k<3;k++) 
+                {
+                    psr[0].obsn[i].observatory_earth[k] = 0;
+                }
             }
         }
 
-
         /* ------------------------------------------------- //
         // Calculation of the event phases - step 1
-                // Step 1 is for all but the last photon
+        // Step 1 is for all but the last photon
         // ------------------------------------------------- */
 
         // keep track of the last TOA before shifting the others
@@ -471,6 +496,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         // Form barycentric arrival times - step 1
         // ------------------------------------------------- //
         formBatsAll(psr,*npsr);
+        //printf("%Lf\t%Lf\n",psr->obsn[1].sat,psr->obsn[1].bat);
 
         // ------------------------------------------------- //
         // Calculate event phases - step 1
@@ -514,7 +540,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
         // ------------------------------------------------- //
         // Calculation of the event phases - step 2
-                // Step 2 repeats the above code for the last photon
+        // Step 2 repeats the above code for the last photon
         // ------------------------------------------------- //
         psr[0].obsn[1].sat = lasttime;
         for (k=0;k<3;k++) psr[0].obsn[1].observatory_earth[k] = lastpos[k];
