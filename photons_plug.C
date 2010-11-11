@@ -64,6 +64,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     char output_pos_file[MAX_FILELEN];
     char phasecol[32];
     strcpy(phasecol,"PULSE_PHASE");
+    char timecol[32];
+    strcpy(timecol,"TIME");
     char command[128];
     
     char error_buffer[128];
@@ -165,8 +167,13 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         {
             strcpy(phasecol,argv[i+1]);
         }   
+        else if (strcmp(argv[i],"-timecol")==0)
+        {
+            strcpy(timecol,argv[i+1]);
+        }   
         else if (strcmp(argv[i],"-h")==0)
         {
+            // FIXME: option to accept a time column in MJDs
             printf("\n TEMPO2 fermi plugin\n");
             printf("======================\n");
             printf("\n USAGE: \n\t tempo2 -gr photons -ft1 FT1.fits -f par.par\n");
@@ -175,6 +182,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
             printf("\t -phase: stores phases in the FT1 by the ones calculated by TEMPO2\n");
             printf("\t -ophase: will calculate orbital phases instead of pulse phases. Changes default column name to ORBITAL_PHASE.\n");
             printf("\t -col XXX: phases will be stored in column XXX. Default is PULSE_PHASE\n");
+            printf("\t -timecol XXX: times will be read from column XXX. Default is TIME\n");
             printf("\t -h: this help.\n");
             printf("===============================================");
             printf("===============================================\n");
@@ -217,7 +225,6 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     // FT1 file
     // ------------------------------------------------- */
 
-        // FIXME: make sure it's TIMESYS==TDB and ??==SOLARSYSTEM
     if (!fits_open_file(&ft1,FT1, READWRITE, &open_status))
     {
         int kw_status;
@@ -271,7 +278,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         fits_get_num_rows(ft1, &nrows_FT1, &status);
         fits_get_num_cols(ft1, &ncols_FT1, &status);
 
-        fits_get_colname(ft1,CASESEN,"TIME",colname,&FT1_time_col,&status);
+        fits_get_colname(ft1,CASESEN,timecol,colname,&FT1_time_col,&status);
         
         //
         
@@ -463,15 +470,11 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         psr->obsn[0].nFlags = 0;
         psr->obsn[0].delayCorr = 0;
         psr->obsn[0].clockCorr = 0;
-                printf("%20.15Lf\t%20.15Lf\n", psr->obsn[0].sat, psr->obsn[0].bat);
-                printf("%20.15Lf\t%20.15Lf\n", psr->obsn[1].sat, psr->obsn[1].bat);
         
         // ------------------------------------------------- //
         // Form barycentric arrival times - step 1
         // ------------------------------------------------- //
         formBatsAll(psr,*npsr);
-                printf("%20.15Lf\t%20.15Lf\n", psr->obsn[0].sat, psr->obsn[0].bat);
-                printf("%20.15Lf\t%20.15Lf\n", psr->obsn[1].sat, psr->obsn[1].bat);
 
         // ------------------------------------------------- //
         // Calculate event phases - step 1
