@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include "../tempo2.h"
-#include <cpgplot.h>
 #include "/usr/include/fitsio.h"
 #include <time.h>
 
@@ -145,14 +144,6 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 	double lastpos[3];
 	
 	double tpb;
-
-	/* ------------------------------------------------- //
-	// cpgplot definitions
-	// ------------------------------------------------- */
-
-	int endit;
-	float fontsize;
-	int linewidth = 1;
 
 	/* ------------------------------------------------- //
 	// Additional definitions
@@ -368,24 +359,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 	float *phase;
 	float *times;
         
-	if (graph == 0)
-	{
-		phase  = (float *)calloc(max_rows,sizeof(float));
-		times  = (float *)calloc(max_rows,sizeof(float));
-	}
-	else if (nrows_FT1 > 300000)		// To avoid core dumps
-	{
-		printf("WARNING: large FT1 file, turning off graphical output.\n");
-		graph = 0;
-		
-		phase  = (float *)calloc(max_rows,sizeof(float));
-		times  = (float *)calloc(max_rows,sizeof(float));
-	}
-	else
-	{
-		phase  = (float *)calloc(nrows_FT1,sizeof(float));
-		times  = (float *)calloc(nrows_FT1,sizeof(float));
-	}	
+        phase  = (float *)calloc(max_rows,sizeof(float));
+        times  = (float *)calloc(max_rows,sizeof(float));
 	
 	float tmin   = 100000., tmax   = -100000.;
 	
