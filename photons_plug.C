@@ -78,7 +78,6 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 	int Hbins  = 20;					// default number of bins for the H-test vs time plot		
 
 	char FT1[MAX_FILELEN];
-	char FT2[MAX_FILELEN];
 	char output[MAX_FILELEN];
 	char output_pos_file[MAX_FILELEN];
 	char phasecol[32];
@@ -89,7 +88,6 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     char history[128];
 	int  par_file      = 0;
 	int  FT1_file	   = 0;
-	int  FT2_file	   = 0;
 	
 	int  ophase        = 0;
 	int  graph	       = 0;
@@ -111,11 +109,11 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 	fitsfile *ft2;
 
 	char colname[FLEN_VALUE];
-	int open_status = 0, status = 0, status2 = 0, hdupos, ncols_FT1,ncols_FT2,anynul;
-	long nrows_FT1,nrows_FT2;
+	int open_status = 0, status = 0, status2 = 0, hdupos, ncols_FT1,anynul;
+	long nrows_FT1;
 	double nulval = 0.;
 
-	int FT1_time_col,FT1_phase_col,FT2_time_col1,FT2_time_col2,FT2_pos_col;
+	int FT1_time_col,FT1_phase_col;
 	int nrows2, rows_status, rows_left;
 	int max_rows = 10000;
 
@@ -125,7 +123,6 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
 	double temptime;
 	double minFT1time = 999999999., maxFT1time = 0.;
-	double minFT2time = 999999999., maxFT2time = 0.;
 	
 	double time_MET_TT[max_rows], time_MJD_TT;
 	double obs_earth[max_rows][3];
@@ -167,11 +164,6 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 			FT1_file = 1;
 			strcpy(FT1,argv[i+1]);
 		}
-		else if (strcmp(argv[i],"-ft2")==0)
-		{
-			FT2_file = 1;
-			strcpy(FT2,argv[i+1]);
-		}
 		else if (strcmp(argv[i],"-output")==0)
 		{
 			output_file = 1;
@@ -193,7 +185,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 		{
 			printf("\n TEMPO2 fermi plugin\n");
 			printf("======================\n");
-			printf("\n USAGE: \n\t tempo2 -gr fermi -ft1 FT1.fits -ft2 FT2.fits -f par.par\n");
+			printf("\n USAGE: \n\t tempo2 -gr photons -ft1 FT1.fits -f par.par\n");
 			printf("\n Command line options:\n");
 			printf("\t -output XXX: writes event times and phases in file XXX\n");
 			printf("\t -phase: stores phases in the FT1 by the ones calculated by TEMPO2\n");
@@ -210,25 +202,16 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 	{
 		printf("No input FT1 file !\n");
 		printf("At least it should look like :\n");
-		printf("\t tempo2 -gr fermi -ft1 FT1.fits -ft2 FT2.fits -f par.par\n");
+		printf("\t tempo2 -gr photons -ft1 FT1.fits -f par.par\n");
 		printf("More options are available. If you need help, please type:\n");
 		printf("\t tempo2 -gr photons -h\n");
-		exit(0);
-	}
-	if (!FT2_file)
-	{
-		printf("No (vestigial) spacecraft file !\n");
-		printf("At least it should look like :\n");
-		printf("\t tempo2 -gr fermi -ft1 FT1.fits -ft2 FT2.fits -f par.par\n");
-		printf("More options are available. If you need help, please type:\n");
-		printf("\t tempo2 -gr photons -h\n");		
 		exit(0);
 	}
 	if (!par_file)
 	{
 		printf("No ephemeris file !\n");
 		printf("At least it should look like :\n");
-		printf("\t tempo2 -gr fermi -ft1 FT1.fits -ft2 FT2.fits -f par.par\n");
+		printf("\t tempo2 -gr photons -ft1 FT1.fits -f par.par\n");
 		printf("More options are available. If you need help, please type:\n");
 		printf("\t tempo2 -gr photons -h\n");
 		exit(0);
@@ -300,55 +283,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
 	fits_close_file(ft1, &status);
 
-	/* ------------------------------------------------- //
-	// FT2 file
-	// ------------------------------------------------- */
-
-	if (!fits_open_file(&ft2,FT2, READONLY, &open_status))
-	{
-		fits_movabs_hdu(ft2,2,NULL,&status);
-
-		fits_get_num_rows(ft2, &nrows_FT2, &status);
-		fits_get_num_cols(ft2, &ncols_FT2, &status);
-
-		fits_get_colname(ft2,CASESEN,"START",colname,&FT2_time_col1,&status);
-		fits_get_colname(ft2,CASESEN,"STOP",colname,&FT2_time_col2,&status);
-		fits_get_colname(ft2,CASESEN,"SC_POSITION",colname,&FT2_pos_col,&status);
-		
-		for (i=1;i<=nrows_FT2;i++)
-		{
-			fits_read_col_dbl(ft2,FT2_time_col1,i,1,1,nulval,&temptime,&anynul,&status);
-			if (temptime < minFT2time) minFT2time = temptime;
-			if (temptime > maxFT2time) maxFT2time = temptime;
-		}
-	}
-
-	if (open_status != 0)
-	{
-		printf("Can't find %s !\n",FT2);
-		exit(-1);
-	}
-
-	fits_close_file(ft2, &status);
-	
 	printf("First photon date in FT1: %lf MET (s)\n",minFT1time);
 	printf(" Last photon date in FT1: %lf MET (s)\n\n",maxFT1time);
-	
-	printf("First START date in FT2:  %lf MET (s)\n",minFT2time);
-	printf(" Last START date in FT2:  %lf MET (s)\n\n",maxFT2time);
-	
-	if (minFT1time < minFT2time)
-	{
-		printf("Warning: no spacecraft data for date %lf MET. Check the FT2 file.\n",minFT1time);
-		printf("All photon phases before %lf MET will be set to -1.\n\n",minFT2time);
-	}
-	
-	if (maxFT1time > maxFT2time)
-	{
-		printf("Warning: no spacecraft data for date %lf MET. Check the FT2 file.\n",maxFT1time);
-		printf("All photon phases after %lf MET will be set to -1.\n\n",maxFT2time);
-	}
-	
 	
 	// The FT1 file is cut into small tim files with # rows <= 10000
 
@@ -451,116 +387,6 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 		readTimfile(psr,timFile,*npsr);
 		
 		
-		/* ------------------------------------------------- //
-		// Satellite position as a function of time
-		// ------------------------------------------------- */
-		j = 1;
-
-		for (i=0;i<nrows2;i++)
-		{
-			if ((time_MET_TT[i] < minFT2time) || (time_MET_TT[i] > maxFT2time))
-			{
-				for (k=0;k<3;k++)
-				{
-					obs_earth[i][k] = 0.;
-				}
-			}
-			else
-			{
-				if (!fits_open_file(&ft2,FT2, READONLY, &status))
-				{
-					fits_movabs_hdu(ft2,2,NULL,&status);
-	
-					if (time_MET_TT[i] < sctime1) j = 1;		// Important, if times in FT1 are not monotonically increasing
-	
-					for (;j<=nrows_FT2;j++)
-					{
-						fits_read_col_dbl(ft2,FT2_time_col1,j,1,1,nulval,&sctime2,&anynul,&status);
-	
-						if (time_MET_TT[i] < sctime2) break;
-					}
-	
-					fits_read_col_dbl(ft2,FT2_time_col1,j-1,1,1,nulval,&sctime1,&anynul,&status);
-	
-					fits_read_col_dbl(ft2,FT2_pos_col,j-1,1,3,nulval,scposn1,&anynul,&status);
-					fits_read_col_dbl(ft2,FT2_pos_col,j,1,3,nulval,scposn2,&anynul,&status);
-				}
-	
-				fits_close_file(ft2, &status);
-				
-				// Interpolation
-				fract = (time_MET_TT[i] - sctime1) / (sctime2 - sctime1);
-	
-				// linear interpolation for vector length
-				length1 = sqrt(inner_product(scposn1, scposn1));
-				length2 = sqrt(inner_product(scposn2, scposn2));
-				intlength = length1 + fract*(length2 - length1);
-	
-				// Compute a base vector on the orbital plane (vector12)
-				outer_product(scposn1, scposn2, vectprod_out);
-				outer_product(vectprod_out, scposn1, vector12);
-				length12 = sqrt(inner_product(vector12, vector12));
-		    
-				// Check vectors scposn1 and scposn2
-				if ((length1 == 0.0) && (length2 == 0.0))
-				{
-					// both vectors are null 
-					for (k=0;k<3;k++)
-					{
-						intposn[k] = 0.0;
-					}
-				} 
-				else if (length1 == 0.0)
-				{
-					// scposn1 is null, but scposn2 is not
-					for (k=0;k<3;k++)
-					{
-						intposn[k] = scposn2[k] / length2 * intlength;
-					}
-				} 
-				else if ((length2 == 0.0) || (length12 == 0.0))
-				{
-					// left:  scposn2 is null, but scposn1 is not 
-					// right: either vector is not null, but they are parallel
-					for (k=0;k<3; k++)
-					{
-						intposn[k] = scposn1[k] / length1 * intlength;
-					}
-				} 
-				else
-				{ 
-					// both has a non-zero length, and they are not parallel
-					
-					// linear interpolation for orbital phase 
-					inttheta = fract * acos(inner_product(scposn1, scposn2) / length1 / length2);
-					factor_cos = cos(inttheta);
-					factor_sin = sin(inttheta);
-	
-					for (k=0;k<3;k++)
-					{
-						intposn[k] = intlength * (scposn1[k] / length1 * factor_cos + vector12[k] / length12 * factor_sin);
-					}
-				}
-	
-				for (k=0;k<3;k++)
-				{
-					obs_earth[i][k] = intposn[k] / SPEED_LIGHT;
-				}
-				
-				// Output TT time and observatory position
-				if (output_pos == 1)
-				{
-					fprintf(output_posf,"%.6lf\t",time_MET_TT[i]);
-					
-					for (k=0;k<3;k++)
-					{
-						fprintf(output_posf,"%12.3f ",intposn[k]);
-					}
-					
-					fprintf(output_posf,"\n");
-				}
-			}
-		}
 
 
 		/* ------------------------------------------------- //
@@ -576,7 +402,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 			// Position replacements
 			for (k=0;k<3;k++) 
 			{
-				psr[0].obsn[i].observatory_earth[k] = obs_earth[i][k];
+				psr[0].obsn[i].observatory_earth[k] = 0;
 			}
 		}
 
@@ -624,36 +450,29 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
 		for (i=1;i<nrows2;i++)
 		{
-			if ((time_MET_TT[i-1] < minFT2time) || (time_MET_TT[i-1] > maxFT2time))
-			{
-				phase[event] = -1.;
-			}
-			else
-			{
-				if (ophase == 0)
-				{
-					phase[event] = modf(psr[0].obsn[i].phase,&intpart);			
-					if (phase[event] < 0.) phase[event]++;
-				}
-				else
-				{
-					if(psr[0].param[param_tasc].paramSet[0])
-					{
-						tpb = (psr[0].obsn[i].bat-psr[0].param[param_tasc].val[0])/(psr[0].param[param_pb].val[0]);
-					}
-					else if(psr[0].param[param_t0].paramSet[0])
-					{
-						tpb = (psr[0].obsn[i].bat-psr[0].param[param_t0].val[0])/(psr[0].param[param_pb].val[0]);
-					}
-					
-					phase[event] = modf(tpb+1000000.0,&intpart);;
-					if (phase[event] < 0.) phase[event]++;
-				}
-	
-				times[event] = psr[0].obsn[i].bat;
-				if (times[event] > tmax) 	tmax = times[event];
-				if (times[event] < tmin)	tmin = times[event];
-			}
+                        if (ophase == 0)
+                        {
+                                phase[event] = modf(psr[0].obsn[i].phase,&intpart);			
+                                if (phase[event] < 0.) phase[event]++;
+                        }
+                        else
+                        {
+                                if(psr[0].param[param_tasc].paramSet[0])
+                                {
+                                        tpb = (psr[0].obsn[i].bat-psr[0].param[param_tasc].val[0])/(psr[0].param[param_pb].val[0]);
+                                }
+                                else if(psr[0].param[param_t0].paramSet[0])
+                                {
+                                        tpb = (psr[0].obsn[i].bat-psr[0].param[param_t0].val[0])/(psr[0].param[param_pb].val[0]);
+                                }
+                                
+                                phase[event] = modf(tpb+1000000.0,&intpart);;
+                                if (phase[event] < 0.) phase[event]++;
+                        }
+
+                        times[event] = psr[0].obsn[i].bat;
+                        if (times[event] > tmax) 	tmax = times[event];
+                        if (times[event] < tmin)	tmin = times[event];
 				
 			if (output_file)
 			{
@@ -681,36 +500,29 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 		// ------------------------------------------------- //		
 		formResiduals(psr,*npsr,0.0);
 	
-		if ((time_MET_TT[psr[0].nobs-1] < minFT2time) || (time_MET_TT[psr[0].nobs-1] > maxFT2time))
-		{
-			phase[event] = -1.;
-		}
-		else
-		{
-			if (ophase == 0)
-			{
-				phase[event] = modf(psr[0].obsn[1].phase,&intpart);
-				if (phase[event] < 0.) phase[event]++;
-			}
-			else
-			{
-				if(psr[0].param[param_tasc].paramSet[0])
-				{
-					tpb = (psr[0].obsn[1].bat-psr[0].param[param_tasc].val[0])/(psr[0].param[param_pb].val[0]);
-				}
-				else if(psr[0].param[param_t0].paramSet[0])
-				{
-					tpb = (psr[0].obsn[1].bat-psr[0].param[param_t0].val[0])/(psr[0].param[param_pb].val[0]);
-				}
-				
-				phase[event] = modf(tpb+1000000.0,&intpart);;
-				if (phase[event] < 0.) phase[event]++;
-			}
-		
-			times[event] = psr[0].obsn[1].bat;		
-			if (times[event] > tmax) 	tmax = times[event];
-			if (times[event] < tmin)	tmin = times[event];
-		}
+                if (ophase == 0)
+                {
+                        phase[event] = modf(psr[0].obsn[1].phase,&intpart);
+                        if (phase[event] < 0.) phase[event]++;
+                }
+                else
+                {
+                        if(psr[0].param[param_tasc].paramSet[0])
+                        {
+                                tpb = (psr[0].obsn[1].bat-psr[0].param[param_tasc].val[0])/(psr[0].param[param_pb].val[0]);
+                        }
+                        else if(psr[0].param[param_t0].paramSet[0])
+                        {
+                                tpb = (psr[0].obsn[1].bat-psr[0].param[param_t0].val[0])/(psr[0].param[param_pb].val[0]);
+                        }
+                        
+                        phase[event] = modf(tpb+1000000.0,&intpart);;
+                        if (phase[event] < 0.) phase[event]++;
+                }
+        
+                times[event] = psr[0].obsn[1].bat;		
+                if (times[event] > tmax) 	tmax = times[event];
+                if (times[event] < tmin)	tmin = times[event];
 
 		if (output_file)
 		{
