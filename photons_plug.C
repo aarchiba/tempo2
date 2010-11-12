@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "../tempo2.h"
+#include "../ifteph.h"
 #include "/usr/include/fitsio.h"
 #include <time.h>
 
@@ -11,6 +12,16 @@ using namespace std;        /* Is this required for a plugin ? Yes, for Linux */
 static char random_letter(int is_cap);
 static char random_number();
 static void random_string(int length, char *str);
+
+// FIXME: why does tempo2 not use TEPH0?
+longdouble tcb2tdb(longdouble mjd) {
+    //return mjd - IFTE_KM1*(mjd-IFTE_MJD0) + IFTE_TEPH0;
+    return mjd - IFTE_KM1*(mjd-IFTE_MJD0);
+}
+longdouble tdb2tcb(longdouble mjd) {
+    //mjd -= IFTE_TEPH0;
+    return mjd + IFTE_KM1*(mjd-IFTE_MJD0);
+}
 
 extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr) 
 {
@@ -260,7 +271,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
                 mjd_ref_set = 0; // Just the integer part doesn't set it
                 mjdi = 1;
             } else {
-                fits_report_error(stderr, kw_status);
+                //fits_report_error(stderr, kw_status);
                 kw_status=0; // Must reset kw_status or future successes will look like failures
             }
             fits_read_key(ft1, TDOUBLE, "MJDREFF", 
@@ -273,10 +284,11 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
                 mjd_ref += mjd_ref_t;
                 mjd_ref_set = 1; // 
             } else {
-                fits_report_error(stderr, kw_status);
+                //fits_report_error(stderr, kw_status);
             }
         }
         if (!mjd_ref_set) {
+            kw_status = 0;
             fits_read_key(ft1, TDOUBLE, "MJDREF", 
                     (void*)&mjd_ref_t, comment, &kw_status);
             if (kw_status<=0) {
@@ -298,6 +310,11 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         fits_get_num_cols(ft1, &ncols_FT1, &status);
 
         fits_get_colname(ft1,CASESEN,timecol,colname,&FT1_time_col,&status);
+        if (status>0) {
+            fprintf(stderr, "No column called %s in %s; try using -timecol\n",
+                    timecol, FT1);
+            exit(4);
+        }
         
         //
         
@@ -434,7 +451,13 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         for (i=0;i<nrows2;i++)
         {
             time_MJD_TDB = time_MET_TDB[i]/86400.+mjd_ref;      
-            fprintf(temp_tim," photons 0.0 %.12Lf 0.00000 @\n",time_MJD_TDB);
+            if (psr[0].units == TDB_UNITS) {
+                fprintf(temp_tim," photons 0.0 %.12Lf 0.00000 @\n",time_MJD_TDB);
+            } else {
+                fprintf(temp_tim," photons 0.0 %.12Lf 0.00000 @\n",tdb2tcb(time_MJD_TDB));
+                //printf("TDB->TCB->TDB roundtrip error: %Lf s\n",
+                //       (tcb2tdb(tdb2tcb(time_MJD_TDB))-time_MJD_TDB)*86400);
+            }
         }
 
         fclose(temp_tim);
@@ -496,7 +519,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         // Form barycentric arrival times - step 1
         // ------------------------------------------------- //
         formBatsAll(psr,*npsr);
-        //printf("%Lf\t%Lf\n",psr->obsn[1].sat,psr->obsn[1].bat);
+        printf("%Lf\t%Lf\n",psr->obsn[0].sat,psr->obsn[0].bat);
+        printf("%Lf\t%Lf\n",psr->obsn[1].sat,psr->obsn[1].bat);
 
         // ------------------------------------------------- //
         // Calculate event phases - step 1
