@@ -234,6 +234,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
     if (!fits_open_file(&ft1,FT1, READWRITE, &open_status))
     {
+        // FIXME: metadata sometimes in second HDU
+        // e.g. RXTE data
         int kw_status;
         char value[80];
         char comment[80];
@@ -309,8 +311,9 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         fits_get_num_rows(ft1, &nrows_FT1, &status);
         fits_get_num_cols(ft1, &ncols_FT1, &status);
 
-        fits_get_colname(ft1,CASESEN,timecol,colname,&FT1_time_col,&status);
+        fits_get_colname(ft1,CASEINSEN,timecol,colname,&FT1_time_col,&status);
         if (status>0) {
+            // FIXME: list column names
             fprintf(stderr, "No column called %s in %s; try using -timecol\n",
                     timecol, FT1);
             exit(4);
