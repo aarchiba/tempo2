@@ -103,6 +103,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
     longdouble mjd_ref = 51910.0007428703703703703; 
     int mjd_ref_set = 0;
+    int timesys_found = 0;
+    int timeref_found = 0;
     double temptime;
     double minFT1time = 999999999., maxFT1time = 0.;
     
@@ -236,77 +238,82 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
     if (!fits_open_file(&ft1,FT1, READWRITE, &open_status))
     {
-        // FIXME: metadata sometimes in second HDU
-        // e.g. RXTE data
-        int kw_status;
-        char value[80];
-        char comment[80];
-        double mjd_ref_t;
-        int mjdi = 0;
-        fits_read_key(ft1, TSTRING, "TIMESYS", 
-                (void*)value, comment, &kw_status);
-        if (kw_status>0) {
-            fits_report_error(stderr, kw_status);
-            fprintf(stderr,"Assuming TIMESYS is TDB\n");
-        } else {
-            if (strcmp(value,"TDB")) {
-                fprintf(stderr,"Error: TIMESYS is %s rather than TDB; input file has not been barycentered\n", value);
-                exit(2);
+        int n_hdu;
+        for (n_hdu = 1; n_hdu<3; n_hdu++) {
+            // metadata sometimes in second HDU
+            // e.g. RXTE data
+            int kw_status;
+            char value[80];
+            char comment[80];
+            double mjd_ref_t;
+            int mjdi = 0;
+
+            fits_movabs_hdu(ft1,n_hdu,NULL,&status);
+
+            kw_status = 0;
+            fits_read_key(ft1, TSTRING, "TIMESYS", 
+                    (void*)value, comment, &kw_status);
+            if (kw_status<=0) {
+                timesys_found = 1;
+                if (strcmp(value,"TDB")) {
+                    fprintf(stderr,"Error: TIMESYS is %s rather than TDB; input file has not been barycentered\n", value);
+                    exit(2);
+                }
             }
-        }
-        fits_read_key(ft1, TSTRING, "TIMEREF", 
-                (void*)value, comment, &kw_status);
-        if (kw_status>0) {
-            fits_report_error(stderr, kw_status);
-            fprintf(stderr,"Warning: assuming TIMEREF is SOLARSYSTEM\n");
-            kw_status=0; // Must reset kw_status or future successes will look like failures
-        } else {
-            if (strcmp(value,"SOLARSYSTEM")) {
-                fprintf(stderr,"Error: TIMEREF is %s rather than SOLARSYSTEM\n", value);
-                exit(2);
+
+            kw_status = 0;
+            fits_read_key(ft1, TSTRING, "TIMEREF", 
+                    (void*)value, comment, &kw_status);
+            if (kw_status<=0) {
+                timeref_found = 1;
+                if (strcmp(value,"SOLARSYSTEM")) {
+                    fprintf(stderr,"Error: TIMEREF is %s rather than SOLARSYSTEM\n", value);
+                    exit(2);
+                }
+            }
+
+            if (!mjd_ref_set) {
+                kw_status = 0;
+                fits_read_key(ft1, TDOUBLE, "MJDREFI", 
+                        (void*)&mjd_ref_t, comment, &kw_status);
+                if (kw_status<=0) {
+                    mjd_ref = mjd_ref_t;
+                    mjd_ref_set = 0; // Just the integer part doesn't set it
+                    mjdi = 1;
+                } 
+                kw_status = 0;
+                fits_read_key(ft1, TDOUBLE, "MJDREFF", 
+                        (void*)&mjd_ref_t, comment, &kw_status);
+                if (kw_status<=0) {
+                    if (!mjdi) {
+                        fprintf(stderr,"Error: MJDREFF found, but MJDREFI missing\n");
+                        exit(2);
+                    }
+                    mjd_ref += mjd_ref_t;
+                    mjd_ref_set = 1; // 
+                } 
+            }
+            if (!mjd_ref_set) {
+                kw_status = 0;
+                fits_read_key(ft1, TDOUBLE, "MJDREF", 
+                        (void*)&mjd_ref_t, comment, &kw_status);
+                if (kw_status<=0) {
+                    mjd_ref = mjd_ref_t;
+                    mjd_ref_set = 1;
+                } 
             }
         }
 
-        if (!mjd_ref_set) {
-            fits_read_key(ft1, TDOUBLE, "MJDREFI", 
-                    (void*)&mjd_ref_t, comment, &kw_status);
-            if (kw_status<=0) {
-                mjd_ref = mjd_ref_t;
-                mjd_ref_set = 0; // Just the integer part doesn't set it
-                mjdi = 1;
-            } else {
-                //fits_report_error(stderr, kw_status);
-                kw_status=0; // Must reset kw_status or future successes will look like failures
-            }
-            fits_read_key(ft1, TDOUBLE, "MJDREFF", 
-                    (void*)&mjd_ref_t, comment, &kw_status);
-            if (kw_status<=0) {
-                if (!mjdi) {
-                    fprintf(stderr,"Error: MJDREFF found, but MJDREFI missing\n");
-                    exit(2);
-                }
-                mjd_ref += mjd_ref_t;
-                mjd_ref_set = 1; // 
-            } else {
-                //fits_report_error(stderr, kw_status);
-            }
+        if (!timesys_found) {
+            fprintf(stderr,"Assuming TIMESYS is TDB\n");
         }
-        if (!mjd_ref_set) {
-            kw_status = 0;
-            fits_read_key(ft1, TDOUBLE, "MJDREF", 
-                    (void*)&mjd_ref_t, comment, &kw_status);
-            if (kw_status<=0) {
-                mjd_ref = mjd_ref_t;
-                mjd_ref_set = 1;
-            } else {
-                kw_status=0; // Must reset kw_status or future successes will look like failures
-            }
-        }
+        if (!timeref_found) {
+            fprintf(stderr,"Warning: assuming TIMEREF is SOLARSYSTEM\n");
+        } 
         if (!mjd_ref_set) {
             fprintf(stderr,"Error: MJDREF or MJDREFI/MJDREFF not found; try specifying -mjdref\n");
             exit(3);
         }
-
 
         fits_movabs_hdu(ft1,2,NULL,&status);
 
@@ -315,9 +322,16 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
         fits_get_colname(ft1,CASEINSEN,timecol,colname,&FT1_time_col,&status);
         if (status>0) {
-            // FIXME: list column names
+            int c, c_status;
+            char colname[80];
+            char *templt="*";
             fprintf(stderr, "No column called %s in %s; try using -timecol\n",
                     timecol, FT1);
+            fprintf(stderr, "Column names are:\n");
+            for (c=1;c<=ncols_FT1;c++) {
+                fits_get_colname(ft1, CASESEN, templt, colname, &c, &c_status);
+                fprintf(stderr,"\t%s\n",colname);
+            }
             exit(4);
         }
         
