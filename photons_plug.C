@@ -74,6 +74,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     int  output_file   = 0;
     int  output_pos    = 0;
     int  phase_replace = 0;
+    int  phase_col_set = 0;
 
     double intpart;
 
@@ -167,6 +168,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         }
         else if (strcmp(argv[i],"-col")==0)
         {
+            phase_col_set = 1;
             strcpy(phasecol,argv[i+1]);
             i++;
         }   
@@ -184,12 +186,12 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         else if (strcmp(argv[i],"-h")==0)
         {
             // FIXME: option to accept a time column in MJDs
-            printf("\n TEMPO2 fermi plugin\n");
-            printf("======================\n");
+            printf("\n TEMPO2 photons plugin\n");
+            printf("========================\n");
             printf("\n USAGE: \n\t tempo2 -gr photons -ft1 FT1.fits -f par.par\n");
             printf("\n Command line options:\n");
-            printf("\t -output XXX: writes event times and phases in file XXX\n");
-            printf("\t -phase: stores phases in the FT1 by the ones calculated by TEMPO2\n");
+            printf("\t -output XXX: writes event times and phases in text file XXX\n");
+            printf("\t -phase: stores calculated phases in a column of FT1\n");
             printf("\t -ophase: will calculate orbital phases instead of pulse phases. Changes default column name to ORBITAL_PHASE.\n");
             printf("\t -col XXX: phases will be stored in column XXX. Default is PULSE_PHASE\n");
             printf("\t -timecol XXX: times will be read from column XXX. Default is TIME\n");
@@ -229,7 +231,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     }
     if (ophase)
     {
-        if (strcmp(phasecol,"PULSE_PHASE") == 0) strcpy(phasecol,"ORBITAL_PHASE");
+        if (!phase_col_set) strcpy(phasecol,"ORBITAL_PHASE");
     }
 
     /* ------------------------------------------------- //
