@@ -13,14 +13,16 @@ static char random_letter(int is_cap);
 static char random_number();
 static void random_string(int length, char *str);
 
-// FIXME: why does tempo2 not use TEPH0?
+#define IAU_K 1.550519768e-8
+#define IAU_KINV 1.55051974395888e-8 /* 1 - 1/(1-IAU_K) */
 longdouble tcb2tdb(longdouble mjd) {
-    //return mjd - IFTE_KM1*(mjd-IFTE_MJD0) + IFTE_TEPH0;
-    return mjd - IFTE_KM1*(mjd-IFTE_MJD0);
+    return mjd - IAU_K*(mjd-IFTE_MJD0) + IFTE_TEPH0;
+    // same as (1-IAU_K)*mjd + IAU_K*IFTE_MJD0 + IFTE_TEPH0
 }
 longdouble tdb2tcb(longdouble mjd) {
-    //mjd -= IFTE_TEPH0;
-    return mjd + IFTE_KM1*(mjd-IFTE_MJD0);
+    // Few hundred nanosec roundtrip error
+    mjd -= IFTE_TEPH0;
+    return mjd + IAU_KINV*(mjd-IFTE_MJD0);
 }
 
 extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr) 
@@ -458,7 +460,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
                 fprintf(temp_tim," photons 0.0 %.12Lf 0.00000 @\n",time_MJD_TDB);
             } else {
                 fprintf(temp_tim," photons 0.0 %.12Lf 0.00000 @\n",tdb2tcb(time_MJD_TDB));
-                //printf("TDB->TCB->TDB roundtrip error: %Lf s\n",
+                //printf("TDB->TCB->TDB roundtrip error: %Lg s\n",
                 //       (tcb2tdb(tdb2tcb(time_MJD_TDB))-time_MJD_TDB)*86400);
             }
         }
@@ -522,8 +524,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         // Form barycentric arrival times - step 1
         // ------------------------------------------------- //
         formBatsAll(psr,*npsr);
-        printf("%Lf\t%Lf\n",psr->obsn[0].sat,psr->obsn[0].bat);
-        printf("%Lf\t%Lf\n",psr->obsn[1].sat,psr->obsn[1].bat);
+        //printf("%Lf\t%Lf\n",psr->obsn[0].sat,psr->obsn[0].bat);
+        //printf("%Lf\t%Lf\n",psr->obsn[1].sat,psr->obsn[1].bat);
 
         // ------------------------------------------------- //
         // Calculate event phases - step 1
