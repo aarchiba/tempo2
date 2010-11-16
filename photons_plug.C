@@ -13,15 +13,16 @@ static char random_letter(int is_cap);
 static char random_number();
 static void random_string(int length, char *str);
 
+#define IAU_TEPH0 (-6.55e-5/86400) /* s */
 #define IAU_K 1.550519768e-8
 #define IAU_KINV 1.55051974395888e-8 /* 1 - 1/(1-IAU_K) */
 longdouble tcb2tdb(longdouble mjd) {
-    return mjd - IAU_K*(mjd-IFTE_MJD0) + IFTE_TEPH0;
+    return mjd - IAU_K*(mjd-IFTE_MJD0) + IAU_TEPH0;
     // same as (1-IAU_K)*mjd + IAU_K*IFTE_MJD0 + IFTE_TEPH0
 }
 longdouble tdb2tcb(longdouble mjd) {
     // Few hundred nanosec roundtrip error
-    mjd -= IFTE_TEPH0;
+    mjd -= IAU_TEPH0;
     return mjd + IAU_KINV*(mjd-IFTE_MJD0);
 }
 
@@ -34,8 +35,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     printf("Author:              Anne Archibald\n");
     printf("                     based on the fermi plugin v5.2\n");
     printf("                     by Lucas Guillemot\n");
-    printf("Updated:             ?? November 2010\n");
-    printf("Version:             0.0\n");
+    printf("Updated:             16 November 2010\n");
+    printf("Version:             0.2\n");
     printf("------------------------------------------\n");
     printf("\n");
 
