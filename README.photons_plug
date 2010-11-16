@@ -1,26 +1,66 @@
 Tempo 2 photons plugin
 ======================
 
-Tempo 2 includes a plugin to allow automatic barycentering and phase calculation for event lists from the Fermi satellite. But it is often useful to calculate phases for events from other missions. One option would be to write a plugin for each satellite, and indeed in some cases this is being done. But those missions for which this is an interesting operation already provide their own tools to barycenter photons. Once barycentering is done, no spacecraft-specific code is necessary. This plugin, therefore, can be used on barycentered photons from many different missions to calculate the arrival phase of each photon.
+Tempo 2 includes a plugin to allow automatic barycentering and phase
+calculation for event lists from the Fermi satellite. But it is often
+useful to calculate phases for events from other missions. One option
+would be to write a plugin for each satellite, and indeed in some cases
+this is being done. But those missions for which this is an interesting
+operation already provide their own tools to barycenter photons. Once
+barycentering is done, no spacecraft-specific code is necessary. This
+plugin, therefore, can be used on barycentered photons from many different
+missions to calculate the arrival phase of each photon.
 
 Generality
 ----------
 
-This plugin has been tested on barycentered FITS files from XMM/Newton, Chandra, Swift, RXTE, and Fermi. It has a good chance of automatically working on data from other missions that use a similar file format, and it allows manual specification of a time column name and a reference MJD at which MET was 0. It does not yet support time columns in units other than seconds (e.g. MJDs), event data in HDUs other than the second, or barycentered photons in TCB rather than TDB.
+This plugin has been tested on barycentered FITS files from XMM/Newton,
+Chandra, Swift, RXTE, and Fermi. It has a good chance of automatically
+working on data from other missions that use a similar file format, and
+it allows manual specification of a time column name and a reference
+MJD at which MET was 0. It does not yet support time columns in units
+other than seconds (e.g. MJDs), event data in HDUs other than the second,
+or barycentered photons in TCB rather than TDB.
 
-The ephemeris can be any ephemeris tempo 2 can understand; in particular, the ephemeris can be expressed in either TCB (the default for tempo 2) or TDB (the default for tempo 1). Barycentered photon arrival times are converted if necessary.
+The ephemeris can be any ephemeris tempo 2 can understand; in particular,
+the ephemeris can be expressed in either TCB (the default for tempo 2)
+or TDB (the default for tempo 1). Barycentered photon arrival times are
+converted if necessary.
 
 Accuracy
 --------
 
-Since tempo 2 internally barycenters all TOAs, this plugin does very little computation in its own right. The MET to MJD conversion is done using long doubles. If the ephemeris is in TDB, no further calculation is done within this plugin; if the ephemeris is in TCB, the photons are converted from TDB to TCB using the IAU definition, slightly modified to use the same Teph0 as tempo 2. This time conversion is done with long doubles, and is accurate to the few hundred nanosecond level; it also appears to agree with tempo 2's conversions to this level (tempo 2 never directly converts TDB to TCB, but it converts TT to each, and its conversions have similar accuracy). 
+Since tempo 2 internally barycenters all TOAs, this plugin does very
+little computation in its own right. The MET to MJD conversion is done
+using long doubles. If the ephemeris is in TDB, no further calculation
+is done within this plugin; if the ephemeris is in TCB, the photons are
+converted from TDB to TCB using the IAU definition, slightly modified
+to use the same Teph0 as tempo 2. This time conversion is done with
+long doubles, and is accurate to the few hundred nanosecond level; it
+also appears to agree with tempo 2's conversions to this level (tempo
+2 never directly converts TDB to TCB, but it converts TT to each, and
+its conversions have similar accuracy).
 
-Experimentally, comparing photon phases for the MSP 1821-24 computed with this plugin to those computed with a custom tempo 1 approach shows that any discrepancies are at the submicrosecond level, apart from a possible global phase shift. 
+Experimentally, comparing photon phases for the MSP 1821-24 computed with
+this plugin to those computed with a custom tempo 1 approach shows that
+any discrepancies are at the submicrosecond level, apart from a possible
+global phase shift.
 
 Installation
 ------------
 
-This plugin requires the cfitsio libraries; as such, it can be compiled the same way as the Fermi plugin (although it does not need PGPLOT). In particular, it should be sufficient to place it in plugin/, add it to plugin/plugin_lists/vanilla.plugins, set LDFLAGS to -lcfitsio, and run "./bootstrap && ./configure && ./make && ./make install". 
+This plugin requires the cfitsio libraries; as such, it can be compiled
+the same way as the Fermi plugin (although it does not need PGPLOT). In
+particular, it should be sufficient to place it in plugin/, add it to
+plugin/plugin_lists/vanilla.plugins, set LDFLAGS to -lcfitsio, and run
+"./bootstrap && ./configure && ./make && ./make install". If, upon
+running the plugin, you get an error about a FITS version mismatch, the
+compilation has found the header file from one version of cfitsio and the
+libraries for another. This frequently occurs because many high-energy
+packages install their own FITS libraries. It may be necessary to
+clear LDFLAGS and LD_LIBRARY_PATH before compiling, and possibly
+also to explicitly set the path to fitsio.h in the photons_plug.C
+(and fermi_plug.C).
 
 Use
 ---
@@ -38,9 +78,15 @@ $ tempo2 -gr photons -ft1 events.fits -f ephemeris.par -phase
 Support
 -------
 
-This plugin was written by Anne Archibald <aarchiba@physics.mcgill.ca>. It was based on the Fermi plugin by Lucas Guillemot, but if you have questions to ask, bugs to report, or suggestions to offer, you should contact Anne instead as the code has been extensively modified.
+This plugin was written by Anne Archibald <aarchiba@physics.mcgill.ca>. It
+was based on the Fermi plugin by Lucas Guillemot, but if you have
+questions to ask, bugs to report, or suggestions to offer, you should
+contact me (Anne) instead as the code has been extensively modified.
 
 License
 -------
 
-As this code is based on the Fermi plugin, part of tempo 2 and licensed under the GPL, this plugin is licensed under the GPL. In short, in the unlikely event that you distribute binaries, you must also distribute the source code.
+As this code is based on the Fermi plugin, part of tempo 2 and licensed
+under the GPL, this plugin is licensed under the GPL. In short, in the
+unlikely event that you distribute binaries, you must also distribute
+the source code.
