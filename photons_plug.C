@@ -45,7 +45,6 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     char parFile[1][MAX_FILELEN];
     char timFile[1][MAX_FILELEN];
     char temptim[9];
-    char gr[256]="/xs";                 // default graphical output is x-window
 
     srand((unsigned)time(NULL));
     temptim[8] = '\0';
@@ -53,12 +52,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     strcpy(timFile[0],temptim);
     strcat(timFile[0],".tim");
 
-    int nbins  = 20;                    // default number of bins for the output phase histogram
-    int Hbins  = 20;                    // default number of bins for the H-test vs time plot       
-
     char FT1[MAX_FILELEN];
     char output[MAX_FILELEN];
-    char output_pos_file[MAX_FILELEN];
     char phasecol[32];
     strcpy(phasecol,"PULSE_PHASE");
     char timecol[32];
@@ -113,16 +108,6 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     double time_MET_TDB[max_rows];
     longdouble time_MJD_TDB;
     double obs_earth[max_rows][3];
-
-    double sctime1 = 0., sctime2 = 0.;
-    double scposn1[3] = {0., 0., 0.};
-    double scposn2[3] = {0., 0., 0.};
-    double intposn[3] = {0., 0., 0.};
-
-    double fract = 0.;
-    double length1, length2, length12, intlength;
-    double vector12[3], vectprod_out[3];
-    double inttheta, factor_cos, factor_sin;
 
     longdouble lasttime, tzrmjd_bary;
     double lastpos[3];
@@ -225,10 +210,6 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     if (output_file)
     {
         outputf = fopen(output,"w+");
-    }
-    if (output_pos)
-    {
-        output_posf = fopen(output_pos_file,"w+");
     }
     if (ophase)
     {
