@@ -60,7 +60,9 @@ libraries for another. This frequently occurs because many high-energy
 packages install their own FITS libraries. It may be necessary to
 clear LDFLAGS and LD_LIBRARY_PATH before compiling, and possibly
 also to explicitly set the path to fitsio.h in the photons_plug.C
-(and fermi_plug.C).
+(and fermi_plug.C). 
+
+When running the plugin, beware: many installations of the ftools or other high-energy software install an incompatible version of the cfitsio library. Typically they ask you to source a shell script, for example ". heainit.sh" which ensures that these libraries are loaded instead of your system libraries. This may prevent this plugin from running; if so, try "unset LD_LIBRARY_PATH" or "unsetenv LD_LIBRARY_PATH", which will allow the plugin to work again.
 
 Use
 ---
