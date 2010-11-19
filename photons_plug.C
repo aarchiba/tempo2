@@ -129,20 +129,29 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         if (strcmp(argv[i],"-f")==0)
         {
             par_file = 1;
-            strcpy(parFile[0],argv[i+1]); 
-            i++;
+            if (++i>=argc) {
+                fprintf(stderr, "Option -f requires an argument\n");
+                exit(5);
+            }
+            strcpy(parFile[0],argv[i]); 
         }
         else if (strcmp(argv[i],"-ft1")==0)
         {
             FT1_file = 1;
-            strcpy(FT1,argv[i+1]);
-            i++;
+            if (++i>=argc) {
+                fprintf(stderr, "Option -ft1 requires an argument\n");
+                exit(5);
+            }
+            strcpy(FT1,argv[i]);
         }
         else if (strcmp(argv[i],"-output")==0)
         {
             output_file = 1;
-            strcpy(output,argv[i+1]);
-            i++;
+            if (++i>=argc) {
+                fprintf(stderr, "Option -output requires an argument\n");
+                exit(5);
+            }
+            strcpy(output,argv[i]);
         }
         else if (strcmp(argv[i],"-phase")==0)
         {
@@ -155,19 +164,28 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         else if (strcmp(argv[i],"-col")==0)
         {
             phase_col_set = 1;
-            strcpy(phasecol,argv[i+1]);
-            i++;
+            if (++i>=argc) {
+                fprintf(stderr, "Option -col requires an argument\n");
+                exit(5);
+            }
+            strcpy(phasecol,argv[i]);
         }   
         else if (strcmp(argv[i],"-timecol")==0)
         {
-            strcpy(timecol,argv[i+1]);
-            i++;
+            if (++i>=argc) {
+                fprintf(stderr, "Option -timecol requires an argument\n");
+                exit(5);
+            }
+            strcpy(timecol,argv[i]);
         }   
         else if (strcmp(argv[i],"-mjdref")==0)
         {
-            sscanf(argv[i+1],"%Lf",&mjd_ref);
+            if (++i>=argc) {
+                fprintf(stderr, "Option -mjdref requires an argument\n");
+                exit(5);
+            }
+            sscanf(argv[i],"%Lf",&mjd_ref);
             mjd_ref_set = 1;
-            i++;
         }   
         else if (strcmp(argv[i],"-h")==0)
         {
@@ -235,7 +253,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
             fits_movabs_hdu(ft1,n_hdu,NULL,&status);
 
             kw_status = 0;
-            fits_read_key(ft1, TSTRING, "TIMESYS", 
+            fits_read_key(ft1, TSTRING, (char*)"TIMESYS", 
                     (void*)value, comment, &kw_status);
             if (kw_status<=0) {
                 timesys_found = 1;
@@ -246,7 +264,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
             }
 
             kw_status = 0;
-            fits_read_key(ft1, TSTRING, "TIMEREF", 
+            fits_read_key(ft1, TSTRING, (char*)"TIMEREF", 
                     (void*)value, comment, &kw_status);
             if (kw_status<=0) {
                 timeref_found = 1;
@@ -258,7 +276,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
             if (!mjd_ref_set) {
                 kw_status = 0;
-                fits_read_key(ft1, TDOUBLE, "MJDREFI", 
+                fits_read_key(ft1, TDOUBLE, (char*)"MJDREFI", 
                         (void*)&mjd_ref_t, comment, &kw_status);
                 if (kw_status<=0) {
                     mjd_ref = mjd_ref_t;
@@ -266,7 +284,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
                     mjdi = 1;
                 } 
                 kw_status = 0;
-                fits_read_key(ft1, TDOUBLE, "MJDREFF", 
+                fits_read_key(ft1, TDOUBLE, (char*)"MJDREFF", 
                         (void*)&mjd_ref_t, comment, &kw_status);
                 if (kw_status<=0) {
                     if (!mjdi) {
@@ -279,7 +297,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
             }
             if (!mjd_ref_set) {
                 kw_status = 0;
-                fits_read_key(ft1, TDOUBLE, "MJDREF", 
+                fits_read_key(ft1, TDOUBLE, (char*)"MJDREF", 
                         (void*)&mjd_ref_t, comment, &kw_status);
                 if (kw_status<=0) {
                     mjd_ref = mjd_ref_t;
@@ -308,7 +326,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         if (status>0) {
             int c, c_status;
             char colname[80];
-            char *templt="*";
+            char *templt=(char*)"*";
             fprintf(stderr, "No column called %s in %s; try using -timecol\n",
                     timecol, FT1);
             fprintf(stderr, "Column names are:\n");
@@ -336,7 +354,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
             
             if (status != 0)
             {
-                    fits_insert_col(ft1,ncols_FT1 + 1,phasecol,"1D", &status2);
+                    fits_insert_col(ft1,ncols_FT1 + 1,phasecol,(char*)"1D", &status2);
                             
                     if (status2 != 0)
                     {
