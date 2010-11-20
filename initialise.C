@@ -434,16 +434,6 @@ void initialiseOne (pulsar *psr, int noWarnings, int fullSetup)
 	sprintf(temp,"XDOT%d",k);
 	strcpy(psr->param[param_xdotn].shortlabel[k],temp);
     }
-  for (k=0;k<psr->param[param_fbjn].aSize;k++)
-    {
-      sprintf(temp,"FBJ%d",k);
-      strcpy(psr->param[param_fbjn].label[k],temp); 
-      strcpy(psr->param[param_fbjn].shortlabel[k],temp);
-
-      sprintf(temp,"TFBJ%d",k);
-      strcpy(psr->param[param_tfbjn].label[k],temp); 
-      strcpy(psr->param[param_tfbjn].shortlabel[k],temp);
-    }       
 
   strcpy(psr->param[param_wave_om].label[0],"WAVE_OM"); strcpy(psr->param[param_wave_om].shortlabel[0],"WAVE_OM");
   strcpy(psr->param[param_quad_om].label[0],"QUAD_OM"); strcpy(psr->param[param_quad_om].shortlabel[0],"QUAD_OM");
