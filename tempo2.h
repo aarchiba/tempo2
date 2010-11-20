@@ -46,6 +46,8 @@
 #define MAX_WHITE            100   /* Maximum number of parameters for whitening       */
 #define MAX_IFUNC            100   /* Maximum number of parameters for interpolation function  */
 #define MAX_BPJ_JUMPS        5     /* Maximum number of jumps in binary params - for BPJ model */
+#define MAX_BTX_JUMPS        5     /* Maximum number of jumps in binary params - for BTX model */
+#define MAX_BTX_DERIVS       12     /* Maximum number of derivatives in binary params - for BTX model */
 #define MAX_TOFFSET          10    /* Number of time jumps allowed in .par file        */
 #define MAX_DMX              64    /* Max number of DM steps allowed */
 #define MAX_FLAGS            50    /* Maximum number of flags in .tim file/observation */
@@ -155,7 +157,8 @@ enum label {param_raj,param_decj,param_f,param_pepoch,param_posepoch,
             param_wave_om,param_kom,param_kin,param_shapmax,param_dth,param_a0,
 	    param_b0,param_xomdot,param_afac,param_eps1dot,param_eps2dot,param_tres,
             param_dshk,param_ephver,param_daop,param_iperharm,param_dmassplanet,param_waveepoch,param_ifunc,
-            param_dmx,param_dmxr1,param_dmxr2,param_dmval};
+            param_dmx,param_dmxr1,param_dmxr2,param_dmval,
+            param_fbn, param_fbjn, param_tfbjn, param_xdotn};
 
 extern int MAX_PSR;
 extern int MAX_OBSN;
@@ -460,6 +463,8 @@ double MSSmodel(pulsar *psr,int p,int obs,int param);
 void updateMSS(pulsar *psr,double val,double err,int pos);
 double BTmodel(pulsar *psr,int p,int obs,int param);
 void updateBT(pulsar *psr,double val,double err,int pos);
+double BTXmodel(pulsar *psr,int p,int obs,int param);
+void updateBTX(pulsar *psr,double val,double err,int pos);
 double BTJmodel(pulsar *psr,int p,int obs,int param,int arr);
 void updateBTJ(pulsar *psr,double val,double err,int pos,int arr);
 double ELL1model(pulsar *psr,int p,int obs,int param);

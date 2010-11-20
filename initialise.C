@@ -360,6 +360,32 @@ void initialiseOne (pulsar *psr, int noWarnings, int fullSetup)
 
 
     }       
+  for (k=0;k<psr->param[param_fbn].aSize;k++)
+    {
+        // Binary frequency is always written FB0 -AMA
+	sprintf(temp,"FB%d (s^-%d)",k,k+1);
+	strcpy(psr->param[param_fbn].label[k],temp);
+	sprintf(temp,"FB%d",k);
+	strcpy(psr->param[param_fbn].shortlabel[k],temp);
+    }
+  for (k=0;k<psr->param[param_xdotn].aSize;k++)
+    {
+        // first derivative is param_a1dot -AMA
+	sprintf(temp,"XDOT%d (lt-s s^-%d)",k+2,k+2);
+	strcpy(psr->param[param_xdotn].label[k],temp);
+	sprintf(temp,"XDOT%d",k);
+	strcpy(psr->param[param_xdotn].shortlabel[k],temp);
+    }
+  for (k=0;k<psr->param[param_fbjn].aSize;k++)
+    {
+      sprintf(temp,"FBJ%d",k);
+      strcpy(psr->param[param_fbjn].label[k],temp); 
+      strcpy(psr->param[param_fbjn].shortlabel[k],temp);
+
+      sprintf(temp,"TFBJ%d",k);
+      strcpy(psr->param[param_tfbjn].label[k],temp); 
+      strcpy(psr->param[param_tfbjn].shortlabel[k],temp);
+    }       
 
   strcpy(psr->param[param_wave_om].label[0],"WAVE_OM"); strcpy(psr->param[param_wave_om].shortlabel[0],"WAVE_OM");
   strcpy(psr->param[param_dmval].label[0],"DMVAL"); strcpy(psr->param[param_dmval].shortlabel[0],"DMVAL");
@@ -405,6 +431,10 @@ void allocateMemory(pulsar *psr, int realloc)
 	psr->param[i].aSize = 9;
       else if (i==param_dmx || i==param_dmxr1 || i==param_dmxr2)
         psr->param[i].aSize = MAX_DMX;
+      else if (i==param_fbjn || i==param_tfbjn)
+        psr->param[i].aSize = MAX_BTX_JUMPS;
+      else if (i==param_fbn || i==param_xdotn)
+        psr->param[i].aSize = MAX_BTX_DERIVS;
       else psr->param[i].aSize = 1;
       
       psr->param[i].val       = (longdouble *)malloc(psr->param[i].aSize*sizeof(longdouble));
