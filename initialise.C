@@ -376,16 +376,6 @@ void initialiseOne (pulsar *psr, int noWarnings, int fullSetup)
 	sprintf(temp,"XDOT%d",k);
 	strcpy(psr->param[param_xdotn].shortlabel[k],temp);
     }
-  for (k=0;k<psr->param[param_fbjn].aSize;k++)
-    {
-      sprintf(temp,"FBJ%d",k);
-      strcpy(psr->param[param_fbjn].label[k],temp); 
-      strcpy(psr->param[param_fbjn].shortlabel[k],temp);
-
-      sprintf(temp,"TFBJ%d",k);
-      strcpy(psr->param[param_tfbjn].label[k],temp); 
-      strcpy(psr->param[param_tfbjn].shortlabel[k],temp);
-    }       
 
   strcpy(psr->param[param_wave_om].label[0],"WAVE_OM"); strcpy(psr->param[param_wave_om].shortlabel[0],"WAVE_OM");
   strcpy(psr->param[param_dmval].label[0],"DMVAL"); strcpy(psr->param[param_dmval].shortlabel[0],"DMVAL");
@@ -431,8 +421,6 @@ void allocateMemory(pulsar *psr, int realloc)
 	psr->param[i].aSize = 9;
       else if (i==param_dmx || i==param_dmxr1 || i==param_dmxr2)
         psr->param[i].aSize = MAX_DMX;
-      else if (i==param_fbjn || i==param_tfbjn)
-        psr->param[i].aSize = MAX_BTX_JUMPS;
       else if (i==param_fbn || i==param_xdotn)
         psr->param[i].aSize = MAX_BTX_DERIVS;
       else psr->param[i].aSize = 1;
