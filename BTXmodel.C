@@ -225,22 +225,44 @@ double BTXmodel(pulsar *psr,int p,int ipos,int param,int arr)
      * phase is 2*M_PI*sum(fb[i]*pow(tt0,i+1)/factorial(i+1))
      * dphase/dfb[i] = 2*M_PI*pow(tt0,i+1)/factorial(i+1)
      * */
+      /* FIXME: how do I test this? */
       fac = 1.0;
       for (i=0;i<arr;i++) fac/=i+2;
       return -2.0*M_PI*r*s*fb[0]*pow(tt0,arr+1)*fac;  
   } else if (param==param_xdotn) {
-      /* FIXME: work out this partial based on a1 and a1dot */
-    return 0;                                               
+      /* FIXME: how do I test this? */
+      fac = 2.0;
+      for (i=0;i<arr;i++) fac/=i+3;
+      return (som*(cbe-ecc) + com*sbe*sqrt(tt))*pow(tt0,i+2)*fac;
   }
   return 0.0;
 }
 
 void updateBTX(pulsar *psr,double val,double err,int pos,int arr)
 {
+  printf("Updating parameter %s by %g (err %g)\n", psr->param[pos].label[arr], val, err);
   if (pos==param_pb)
     {
       psr->param[param_pb].val[0] += val;
       psr->param[param_pb].err[0]  = err;
+    }
+  else if (pos==param_pbdot)
+    {
+      /* FIXME: use the fbn instead */
+      psr->param[pos].val[0] += val;
+      psr->param[pos].err[0]  = err;
+    }
+  else if (pos==param_fbn)
+    {
+      /* I think it's correct to not update the PB/PBDOT */
+      psr->param[pos].val[arr] += val;
+      psr->param[pos].err[arr]  = err;
+    }
+  else if (pos==param_xdotn)
+    {
+      /* FIXME: update PB/PBdot if appropriate */
+      psr->param[pos].val[arr] += val;
+      psr->param[pos].err[arr]  = err;
     }
   else if (pos==param_a1 || pos==param_ecc || pos==param_t0 || pos==param_gamma || pos==param_edot)
     {
@@ -251,13 +273,6 @@ void updateBTX(pulsar *psr,double val,double err,int pos,int arr)
     {
       psr->param[pos].val[0] += val*180.0/M_PI;
       psr->param[pos].err[0]  = err*180.0/M_PI;
-    }
-  else if (pos==param_pbdot)
-    {
-        /* FIXME: use the fbn instead */
-        /* FIXME: also add other new quantities */
-      psr->param[pos].val[0] += val;
-      psr->param[pos].err[0]  = err;
     }
   else if (pos==param_omdot)
     {
