@@ -151,7 +151,7 @@ void readParfileGlobal(pulsar *psr,int npsr,char tpar[MAX_STRLEN][MAX_FILELEN],
 
 void checkLine(pulsar *psr,char *str,FILE *fin,parameter *elong, parameter *elat)
 {
-  int gval;
+  int gval, fval;
   if (str[0]=='#') /* Comment line */
     fgets(str,1000,fin);
   else if (strcasecmp(str,"PSR")==0 || strcasecmp(str,"PSRB")==0 || strcasecmp(str,"PSRJ")==0) /* Name of pulsar */
@@ -451,9 +451,8 @@ void checkLine(pulsar *psr,char *str,FILE *fin,parameter *elong, parameter *elat
     readValue(psr,str,fin,&(psr->param[param_f]),1);
   else if (strcasecmp(str,"F0")==0 || strcasecmp(str,"F")==0)      /* F0 */
     readValue(psr,str,fin,&(psr->param[param_f]),0);
-  else if (str[0]=='F' || str[0]=='f') /* Read higher frequency derivatives */
+  else if (sscanf(str,"F%d",&fval)==1 || sscanf(str,"f%d",&fval)==1) /* Read higher frequency derivatives */
     {
-      int fval;
       if (sscanf(str+1,"%d",&fval)==1)
 	{
 	  if (fval<psr->param[param_f].aSize)
