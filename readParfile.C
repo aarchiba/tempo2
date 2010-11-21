@@ -772,9 +772,9 @@ void checkLine(pulsar *psr,char *str,FILE *fin,parameter *elong, parameter *elat
 	    readValue(psr,str,fin,&(psr->param[param_fbn]),fval);
             if (fval==0 && !psr->param[param_pb].paramSet[0]) {
                 /* set PB since lots of code uses it */
-                psr->param[param_pb].val[0] = (1./psr->param[param_fbn].val[0])*SECDAY;
+                psr->param[param_pb].val[0] = (1./psr->param[param_fbn].val[0])/SECDAY;
                 psr->param[param_pb].fitFlag[0] = 0;
-                psr->param[param_pb].err[0] = SECDAY*psr->param[param_fbn].err[0]/pow(psr->param[param_fbn].val[0],2);
+                psr->param[param_pb].err[0] = 1./SECDAY*psr->param[param_fbn].err[0]/pow(psr->param[param_fbn].val[0],2);
                 psr->param[param_pb].prefit[0] = psr->param[param_pb].val[0];
                 psr->param[param_pb].paramSet[0] = 1;
             }
