@@ -225,6 +225,11 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         printf("\t tempo2 -gr photons -h\n");
         exit(1);
     }
+    if (!phase_replace && !output_file) {
+        printf("Warning: neither -phase nor -output were selected\n");
+        printf("so while phases will be calculated they will not\n");
+        printf("recorded anywhere.\n");
+    }
     if (output_file)
     {
         outputf = fopen(output,"w+");
