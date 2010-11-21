@@ -763,6 +763,28 @@ void checkLine(pulsar *psr,char *str,FILE *fin,parameter *elong, parameter *elat
     readValue(psr,str,fin,&(psr->param[param_bpjpb]),3);
   else if (strcasecmp(str,"BPJPB_5")==0)
     readValue(psr,str,fin,&(psr->param[param_bpjpb]),4);
+  /* BTX */
+  else if (sscanf(str,"FB%d",&fval)==1 || sscanf(str,"fb%d",&fval)==1) /* Read higher binary frequency derivatives */
+    {
+      if (sscanf(str+2,"%d",&fval)==1)
+	{
+	  if (fval<psr->param[param_fbn].aSize) {
+	    readValue(psr,str,fin,&(psr->param[param_fbn]),fval);
+            if (fval==0 && !psr->param[param_pb].paramSet[0]) {
+                /* set PB since lots of code uses it */
+                psr->param[param_pb].val[0] = (1./psr->param[param_fbn].val[0])*SECDAY;
+                psr->param[param_pb].fitFlag[0] = 0;
+                psr->param[param_pb].err[0] = SECDAY*psr->param[param_fbn].err[0]/pow(psr->param[param_fbn].val[0],2);
+                psr->param[param_pb].prefit[0] = psr->param[param_pb].val[0];
+                psr->param[param_pb].paramSet[0] = 1;
+            }
+            if (psr->nCompanion==0) psr->nCompanion=1;
+          } else if (fval>=psr->param[param_fbn].aSize){
+	    printf("WARNING!!! Currently only binary period derivatives up to order %d\n", psr->param[param_fbn].aSize);
+	    printf("WARNING!!! are available. All higher derivatives will be ignored!\n");
+	  }
+	}
+    }
   else if (strcasecmp(str,"NTOA")==0)
     {
       char str[1000];
