@@ -51,18 +51,24 @@ Installation
 
 This plugin requires the cfitsio libraries; as such, it can be compiled
 the same way as the Fermi plugin (although it does not need PGPLOT). In
-particular, it should be sufficient to place it in plugin/, add it to
-plugin/plugin_lists/vanilla.plugins, set LDFLAGS to -lcfitsio, and run
-"./bootstrap && ./configure && ./make && ./make install". If, upon
-running the plugin, you get an error about a FITS version mismatch, the
-compilation has found the header file from one version of cfitsio and the
-libraries for another. This frequently occurs because many high-energy
-packages install their own FITS libraries. It may be necessary to
-clear LDFLAGS and LD_LIBRARY_PATH before compiling, and possibly
-also to explicitly set the path to fitsio.h in the photons_plug.C
-(and fermi_plug.C). 
+recent tempo 2 versions, the cfitsio library is automatically detected,
+so it should be sufficient to add photons_plug.C alongside fermi_plug.C
+in plugin/plugin_lists/cfitsio_pgplot.plugins and run ./bootstrap &&
+./configure && make && make install. If, upon running the plugin,
+you get an error about a FITS version mismatch, the compilation has
+found the header file from one version of cfitsio and the libraries
+for another. This frequently occurs because many high-energy packages
+install their own FITS libraries. It may be necessary to clear LDFLAGS
+and LD_LIBRARY_PATH before compiling, and possibly also to explicitly
+set the path to fitsio.h in the photons_plug.C (and fermi_plug.C).
 
-When running the plugin, beware: many installations of the ftools or other high-energy software install an incompatible version of the cfitsio library. Typically they ask you to source a shell script, for example ". heainit.sh" which ensures that these libraries are loaded instead of your system libraries. This may prevent this plugin from running; if so, try "unset LD_LIBRARY_PATH" or "unsetenv LD_LIBRARY_PATH", which will allow the plugin to work again.
+When running the plugin, beware: many installations of the ftools or
+other high-energy software install an incompatible version of the cfitsio
+library. Typically they ask you to source a shell script, for example
+". heainit.sh" which ensures that these libraries are loaded instead of
+your system libraries. This may prevent this plugin from running; if so,
+try "unset LD_LIBRARY_PATH" or "unsetenv LD_LIBRARY_PATH", which will
+allow the plugin to work again.
 
 Use
 ---
