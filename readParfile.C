@@ -785,6 +785,22 @@ void checkLine(pulsar *psr,char *str,FILE *fin,parameter *elong, parameter *elat
 	  }
 	}
     }
+  else if (sscanf(str,"XDOT%d",&fval)==1 || sscanf(str,"xdot%d",&fval)==1) /* Read higher binary frequency derivatives */
+    {
+      if (sscanf(str+4,"%d",&fval)==1)
+	{
+          if (fval==0) {
+              printf("WARNING: XDOT0 is called A1; ignoring\n");
+          } else if (fval==1) {
+              printf("WARNING: XDOT1 is called XDOT; ignoring\n");
+          } else if (fval-2<psr->param[param_xdotn].aSize) {
+	    readValue(psr,str,fin,&(psr->param[param_xdotn]),fval-2);
+          } else if (fval-2>=psr->param[param_xdotn].aSize){
+	    printf("WARNING!!! Currently only binary size derivatives up to order %d\n", psr->param[param_fbn].aSize+2);
+	    printf("WARNING!!! are available. All higher derivatives will be ignored!\n");
+	  }
+	}
+    }
   else if (strcasecmp(str,"NTOA")==0)
     {
       char str[1000];
