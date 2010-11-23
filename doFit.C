@@ -848,6 +848,8 @@ double getParamDeriv(pulsar *psr,int ipos,double x,int i,int k)
     afunc = BTmodel(psr,0,ipos,i);
   else if (strcmp(psr->binaryModel,"BTX")==0) 
     afunc = BTXmodel(psr,0,ipos,i,k);
+  else if (strcmp(psr->binaryModel,"BTF")==0) 
+    afunc = BTFmodel(psr,0,ipos,i,k);
   else if (strcmp(psr->binaryModel,"BTJ")==0) 
     afunc = BTJmodel(psr,0,ipos,i,k);
   else if (strcmp(psr->binaryModel,"ELL1")==0) 
@@ -1033,6 +1035,8 @@ void updateParameters(pulsar *psr,int p,double *val,double *error)
 		updateBT(&psr[p],val[j],error[j],i);
 	      else if (strcmp(psr[p].binaryModel,"BTX")==0)
 		updateBTX(&psr[p],val[j],error[j],i,k);
+	      else if (strcmp(psr[p].binaryModel,"BTF")==0)
+		updateBTF(&psr[p],val[j],error[j],i,k);
 	      else if (strcmp(psr[p].binaryModel,"BTJ")==0)
 		updateBTJ(&psr[p],val[j],error[j],i,k);
 	      else if (strcmp(psr[p].binaryModel,"ELL1")==0)
