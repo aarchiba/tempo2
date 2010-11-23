@@ -803,30 +803,30 @@ void checkLine(pulsar *psr,char *str,FILE *fin,parameter *elong, parameter *elat
   /* BTF */
   else if (strcasecmp(str,"BTFSPAN")==0)
     readValue(psr,str,fin,&(psr->param[param_btfspan]),4);
-  else if (sscanf(str,"PBA%d",&fval)==1 || sscanf(str,"pba%d",&fval)==1) /* Read higher binary frequency derivatives */
+  else if (sscanf(str,"FBA%d",&fval)==1 || sscanf(str,"fba%d",&fval)==1) /* Read higher binary frequency derivatives */
     {
       if (sscanf(str+3,"%d",&fval)==1)
 	{
           if (fval==0) {
-            printf("WARNING!! PBA0 undefined, will be ignored\n");
-          } else if (fval<psr->param[param_pban].aSize) {
-	    readValue(psr,str,fin,&(psr->param[param_pban]),fval-1);
-          } else if (fval>=psr->param[param_pban].aSize){
-	    printf("WARNING!!! Currently only binary modulation terms up to order %d\n", psr->param[param_pban].aSize);
+            printf("WARNING!! FBA0 undefined, will be ignored\n");
+          } else if (fval<psr->param[param_fban].aSize) {
+	    readValue(psr,str,fin,&(psr->param[param_fban]),fval-1);
+          } else if (fval>=psr->param[param_fban].aSize){
+	    printf("WARNING!!! Currently only binary modulation terms up to order %d\n", psr->param[param_fban].aSize);
 	    printf("WARNING!!! are available. All higher terms will be ignored!\n");
 	  }
 	}
     }
-  else if (sscanf(str,"PBB%d",&fval)==1 || sscanf(str,"pbb%d",&fval)==1) /* Read higher binary frequency derivatives */
+  else if (sscanf(str,"FBB%d",&fval)==1 || sscanf(str,"fbb%d",&fval)==1) /* Read higher binary frequency derivatives */
     {
       if (sscanf(str+3,"%d",&fval)==1)
 	{
           if (fval==0) {
-            printf("WARNING!! PBB0 undefined, will be ignored\n");
-          } else if (fval<psr->param[param_pbbn].aSize) {
-	    readValue(psr,str,fin,&(psr->param[param_pbbn]),fval-1);
-          } else if (fval>=psr->param[param_pbbn].aSize){
-	    printf("WARNING!!! Currently only binary modulation terms up to order %d\n", psr->param[param_pbbn].aSize);
+            printf("WARNING!! FBB0 undefined, will be ignored\n");
+          } else if (fval<psr->param[param_fbbn].aSize) {
+	    readValue(psr,str,fin,&(psr->param[param_fbbn]),fval-1);
+          } else if (fval>=psr->param[param_fbbn].aSize){
+	    printf("WARNING!!! Currently only binary modulation terms up to order %d\n", psr->param[param_fbbn].aSize);
 	    printf("WARNING!!! are available. All higher terms will be ignored!\n");
 	  }
 	}

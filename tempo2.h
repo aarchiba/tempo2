@@ -159,7 +159,7 @@ enum label {param_raj,param_decj,param_f,param_pepoch,param_posepoch,
             param_dshk,param_ephver,param_daop,param_iperharm,param_dmassplanet,param_waveepoch,param_ifunc,
             param_dmx,param_dmxr1,param_dmxr2,param_dmval,
             param_fbn, param_xdotn, 
-            param_pban, param_pbbn, param_btfspan};
+            param_fban, param_fbbn, param_btfspan};
 
 extern int MAX_PSR;
 extern int MAX_OBSN;
