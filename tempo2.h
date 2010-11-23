@@ -170,7 +170,7 @@ enum label {param_raj,param_decj,param_f,param_pepoch,param_posepoch,
 	    param_quad_ifunc_c,param_tel_dx,param_tel_dy,param_tel_dz,
             param_dmval,
             param_fbn, param_xdotn, 
-            param_pban, param_pbbn, param_btfspan};
+            param_fban, param_fbbn, param_btfspan};
 
 /*
  * These represent the possible constraints to the fit that have been implemented.
