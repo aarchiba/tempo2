@@ -389,6 +389,8 @@ void initialiseOne (pulsar *psr, int noWarnings, int fullSetup)
   strcpy(psr->param[param_tzrfrq].shortlabel[0],"TZRFRQ");
   strcpy(psr->param[param_tspan].label[0],"TSPAN (min)"); 
   strcpy(psr->param[param_tspan].shortlabel[0],"TSPAN");
+  strcpy(psr->param[param_btfspan].label[0],"BTFSPAN (days)");
+  strcpy(psr->param[param_btfspan].shortlabel[0],"BTFSPAN");
 
   for (k=0;k<psr->param[param_bpjep].aSize;k++)
     {
@@ -433,6 +435,22 @@ void initialiseOne (pulsar *psr, int noWarnings, int fullSetup)
 	strcpy(psr->param[param_xdotn].label[k],temp);
 	sprintf(temp,"XDOT%d",k);
 	strcpy(psr->param[param_xdotn].shortlabel[k],temp);
+    }
+  for (k=0;k<psr->param[param_pban].aSize;k++)
+    {
+        // first derivative is param_a1dot -AMA
+	sprintf(temp,"PBA%d (days)",k+2,k+2);
+	strcpy(psr->param[param_pban].label[k],temp);
+	sprintf(temp,"PBA%d",k);
+	strcpy(psr->param[param_pban].shortlabel[k],temp);
+    }
+  for (k=0;k<psr->param[param_pbbn].aSize;k++)
+    {
+        // first derivative is param_a1dot -AMA
+	sprintf(temp,"PBB%d (days)",k+2,k+2);
+	strcpy(psr->param[param_pbbn].label[k],temp);
+	sprintf(temp,"PBB%d",k);
+	strcpy(psr->param[param_pbbn].shortlabel[k],temp);
     }
 
   strcpy(psr->param[param_wave_om].label[0],"WAVE_OM"); strcpy(psr->param[param_wave_om].shortlabel[0],"WAVE_OM");
@@ -489,6 +507,8 @@ void allocateMemory(pulsar *psr, int realloc)
       else if (i==param_tel_dz) psr->param[i].aSize = MAX_TEL_DZ;
       else if (i==param_fbn || i==param_xdotn)
         psr->param[i].aSize = MAX_BTX_DERIVS;
+      else if (i==param_pban || i==param_pbbn)
+        psr->param[i].aSize = MAX_BTF_TERMS;
       else psr->param[i].aSize = 1;
       
       psr->param[i].val       = (longdouble *)malloc(psr->param[i].aSize*sizeof(longdouble));

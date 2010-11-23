@@ -838,8 +838,7 @@ void checkLine(pulsar *psr,char *str,FILE *fin,parameter *elong, parameter *elat
       readValue(psr,str,fin,&(psr->param[param_pb]),0);
       if (psr->nCompanion==0) psr->nCompanion=1;
     }
-  else if ((strcasecmp(str,"PBDOT")!=0) && (str[0]=='P' || str[0]=='p') &&  /* Higher Pb derivatives */
-	   (str[1]=='B' || str[1]=='b'))
+  else if (sscanf(str,"PB%d",&fval)==1 || sscanf(str,"pb%d",&fval)==1)
     {
       int pbval;
       if (sscanf(str+3,"%d",&pbval)==1)
@@ -1026,6 +1025,37 @@ void checkLine(pulsar *psr,char *str,FILE *fin,parameter *elong, parameter *elat
           } else if (fval-2>=psr->param[param_xdotn].aSize){
 	    printf("WARNING!!! Currently only binary size derivatives up to order %d\n", psr->param[param_fbn].aSize+2);
 	    printf("WARNING!!! are available. All higher derivatives will be ignored!\n");
+	  }
+	}
+    }
+  /* BTF */
+  else if (strcasecmp(str,"BTFSPAN")==0)
+    readValue(psr,str,fin,&(psr->param[param_btfspan]),4);
+  else if (sscanf(str,"PBA%d",&fval)==1 || sscanf(str,"pba%d",&fval)==1) /* Read higher binary frequency derivatives */
+    {
+      if (sscanf(str+3,"%d",&fval)==1)
+	{
+          if (fval==0) {
+            printf("WARNING!! PBA0 undefined, will be ignored\n");
+          } else if (fval<psr->param[param_pban].aSize) {
+	    readValue(psr,str,fin,&(psr->param[param_pban]),fval-1);
+          } else if (fval>=psr->param[param_pban].aSize){
+	    printf("WARNING!!! Currently only binary modulation terms up to order %d\n", psr->param[param_pban].aSize);
+	    printf("WARNING!!! are available. All higher terms will be ignored!\n");
+	  }
+	}
+    }
+  else if (sscanf(str,"PBB%d",&fval)==1 || sscanf(str,"pbb%d",&fval)==1) /* Read higher binary frequency derivatives */
+    {
+      if (sscanf(str+3,"%d",&fval)==1)
+	{
+          if (fval==0) {
+            printf("WARNING!! PBB0 undefined, will be ignored\n");
+          } else if (fval<psr->param[param_pbbn].aSize) {
+	    readValue(psr,str,fin,&(psr->param[param_pbbn]),fval-1);
+          } else if (fval>=psr->param[param_pbbn].aSize){
+	    printf("WARNING!!! Currently only binary modulation terms up to order %d\n", psr->param[param_pbbn].aSize);
+	    printf("WARNING!!! are available. All higher terms will be ignored!\n");
 	  }
 	}
     }

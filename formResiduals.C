@@ -76,6 +76,7 @@ void formResiduals(pulsar *psr,int npsr,int removeMean)
 	     {
 	       if (strcmp(psr[p].binaryModel,"BT")==0)         torb = BTmodel(psr,p,i,-1);
 	       else if (strcmp(psr[p].binaryModel,"BTX")==0)   torb = BTXmodel(psr,p,i,-1,0);
+	       else if (strcmp(psr[p].binaryModel,"BTF")==0)   torb = BTFmodel(psr,p,i,-1,0);
 	       else if (strcmp(psr[p].binaryModel,"BTJ")==0)   torb = BTJmodel(psr,p,i,-1,0);
 	       else if (strcmp(psr[p].binaryModel,"ELL1")==0)  torb = ELL1model(psr,p,i,-1);
 	       else if (strcmp(psr[p].binaryModel,"DD")==0)    torb = DDmodel(psr,p,i,-1);

@@ -53,6 +53,7 @@
 #define MAX_T2QUAD           50    /* Maximum number of T2EQUADs allowed               */
 #define MAX_BPJ_JUMPS        5     /* Maximum number of jumps in binary params - for BPJ model */
 #define MAX_BTX_DERIVS       12     /* Maximum number of derivatives in binary params - for BTX model */
+#define MAX_BTF_TERMS        20     /* Maximum number of sinusoids in binary params - for BTF model */
 #define MAX_TOFFSET          10    /* Number of time jumps allowed in .par file        */
 #define MAX_QUAD             150   /* Maximum number of frequency channels in quadrupolar function */
 #define MAX_DMX              64    /* Max number of DM steps allowed */
@@ -168,7 +169,8 @@ enum label {param_raj,param_decj,param_f,param_pepoch,param_posepoch,
             param_telx,param_tely,param_telz,param_telEpoch,param_quad_ifunc_p,
 	    param_quad_ifunc_c,param_tel_dx,param_tel_dy,param_tel_dz,
             param_dmval,
-            param_fbn, param_xdotn};
+            param_fbn, param_xdotn, 
+            param_pban, param_pbbn, param_btfspan};
 
 /*
  * These represent the possible constraints to the fit that have been implemented.
@@ -578,6 +580,8 @@ double BTmodel(pulsar *psr,int p,int obs,int param);
 void updateBT(pulsar *psr,double val,double err,int pos);
 double BTXmodel(pulsar *psr,int p,int obs,int param,int arr);
 void updateBTX(pulsar *psr,double val,double err,int pos,int arr);
+double BTFmodel(pulsar *psr,int p,int obs,int param,int arr);
+void updateBTF(pulsar *psr,double val,double err,int pos,int arr);
 double BTJmodel(pulsar *psr,int p,int obs,int param,int arr);
 void updateBTJ(pulsar *psr,double val,double err,int pos,int arr);
 double ELL1model(pulsar *psr,int p,int obs,int param);
