@@ -428,6 +428,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         }
 
         printf("Copying photons from %s to %s\n", FT_in_filter, FT_out);
+        status = 0;
         if (!fits_open_file(&ft_in, FT_in_filter, READONLY, &status)) {
             // Record the column number for later
             if (fits_movabs_hdu(ft_in,event_hdu,NULL,&status) || fits_get_colname(ft_in,CASEINSEN,phasecol,colname,&FT1_phase_col,&status)) {
@@ -436,15 +437,15 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
                 exit(11);
             }
             if (!fits_create_file(&ft_out, FT_out,  &status)) {
-                if (0) {
-                    while (!fits_movabs_hdu(ft_in, i++, NULL, &status))
-                        fits_copy_hdu(ft_in, ft_out, 1, &status);
+                // Copy all HDUs one-by-one
+                // In the process, make room for more header comments
+                status = 0;
+                i = 1;
+                while (!fits_movabs_hdu(ft_in, i++, NULL, &status))
+                    fits_copy_hdu(ft_in, ft_out, 5, &status);
 
-                    if (status==END_OF_FILE) status=0;
-                    else printf("Error happened while transferring\n");
-                } else {
-                    fits_copy_file(ft_in, ft_out, 1, 1, 1, &status);
-                }
+                if (status==END_OF_FILE) status=0;
+                else printf("Error happened while transferring\n");
 
                 fits_close_file(ft_out, &status);
             }
