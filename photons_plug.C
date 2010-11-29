@@ -4,7 +4,7 @@
 #include <math.h>
 #include "../tempo2.h"
 #include "../ifteph.h"
-#include <fitsio.h>
+#include "/usr/include/fitsio.h"
 #include <time.h>
 
 using namespace std;        /* Is this required for a plugin ? Yes, for Linux */
@@ -52,7 +52,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     strcpy(timFile[0],temptim);
     strcat(timFile[0],".tim");
 
-    char FT1[MAX_FILELEN];
+    char FT_in[MAX_FILELEN];
+    char FT_out[MAX_FILELEN];
     char output[MAX_FILELEN];
     char phasecol[32];
     strcpy(phasecol,"PULSE_PHASE");
@@ -63,7 +64,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     char error_buffer[128];
     char history[128];
     int  par_file      = 0;
-    int  FT1_file      = 0;
+    int  in_file      = 0;
     
     int  ophase        = 0;
     int  graph         = 0;
@@ -82,8 +83,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     // fits file definitions
     // ------------------------------------------------- */
 
-    fitsfile *ft1;
-    fitsfile *ft2;
+    fitsfile *ft_in;
+    fitsfile *ft_out;
 
     char colname[FLEN_VALUE];
     int open_status = 0, status = 0, status2 = 0, hdupos, ncols_FT1,anynul;
@@ -93,6 +94,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     int FT1_time_col,FT1_phase_col;
     int nrows2, rows_status, rows_left;
     int max_rows = MAX_OBSN_VAL - 100;
+    int event_hdu;
+    int event_hdu_set = 0;
 
     /* ------------------------------------------------- //
     // Time and satellite position definitions
@@ -102,6 +105,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     int mjd_ref_set = 0;
     int timesys_found = 0;
     int timeref_found = 0;
+    int phasecol_exists = 0;
     double temptime;
     double minFT1time = 999999999., maxFT1time = 0.;
     
@@ -135,27 +139,32 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
             }
             strcpy(parFile[0],argv[i]); 
         }
-        else if (strcmp(argv[i],"-ft1")==0)
+        else if (strcmp(argv[i],"-in")==0)
         {
-            FT1_file = 1;
+            in_file = 1;
             if (++i>=argc) {
-                fprintf(stderr, "Option -ft1 requires an argument\n");
+                fprintf(stderr, "Option -in requires an argument\n");
                 exit(5);
             }
-            strcpy(FT1,argv[i]);
+            strcpy(FT_in,argv[i]);
         }
-        else if (strcmp(argv[i],"-output")==0)
+        else if (strcmp(argv[i],"-textoutput")==0)
         {
             output_file = 1;
             if (++i>=argc) {
-                fprintf(stderr, "Option -output requires an argument\n");
+                fprintf(stderr, "Option -textoutput requires an argument\n");
                 exit(5);
             }
             strcpy(output,argv[i]);
         }
-        else if (strcmp(argv[i],"-phase")==0)
+        else if (strcmp(argv[i],"-fitsoutput")==0)
         {
             phase_replace = 1;
+            if (++i>=argc) {
+                fprintf(stderr, "Option -fitsoutput requires an argument\n");
+                exit(5);
+            }
+            strcpy(FT_out,argv[i]);
         }
         else if (strcmp(argv[i],"-ophase")==0)
         {
@@ -169,6 +178,15 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
                 exit(5);
             }
             strcpy(phasecol,argv[i]);
+        }   
+        else if (strcmp(argv[i],"-hdu")==0)
+        {
+            event_hdu_set = 1;
+            if (++i>=argc) {
+                fprintf(stderr, "Option -hdu requires an argument\n");
+                exit(5);
+            }
+            event_hdu = atoi(argv[i]);
         }   
         else if (strcmp(argv[i],"-timecol")==0)
         {
@@ -192,10 +210,11 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
             // FIXME: option to accept a time column in MJDs
             printf("\n TEMPO2 photons plugin\n");
             printf("========================\n");
-            printf("\n USAGE: \n\t tempo2 -gr photons -ft1 FT1.fits -f par.par\n");
+            printf("\n USAGE: \n\t tempo2 -gr photons -in FT1.fits -f par.par\n");
             printf("\n Command line options:\n");
-            printf("\t -output XXX: writes event times and phases in text file XXX\n");
-            printf("\t -phase: stores calculated phases in a column of FT1\n");
+            printf("\t -in XXX: read events from fits file XXX\n");
+            printf("\t -textoutput XXX: writes event times and phases in text file XXX\n");
+            printf("\t -fitsoutput XXX: stores calculated phases in a column of XXX\n");
             printf("\t -ophase: will calculate orbital phases instead of pulse phases. Changes default column name to ORBITAL_PHASE.\n");
             printf("\t -col XXX: phases will be stored in column XXX. Default is PULSE_PHASE\n");
             printf("\t -timecol XXX: times will be read from column XXX. Default is TIME\n");
@@ -207,11 +226,11 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         }
     }
     
-    if (!FT1_file)
+    if (!in_file)
     {
-        printf("No input FT1 file !\n");
+        printf("No input FITS file !\n");
         printf("At least it should look like :\n");
-        printf("\t tempo2 -gr photons -ft1 FT1.fits -f par.par\n");
+        printf("\t tempo2 -gr photons -in FT1.fits -f par.par\n");
         printf("More options are available. If you need help, please type:\n");
         printf("\t tempo2 -gr photons -h\n");
         exit(1);
@@ -220,14 +239,14 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     {
         printf("No ephemeris file !\n");
         printf("At least it should look like :\n");
-        printf("\t tempo2 -gr photons -ft1 FT1.fits -f par.par\n");
+        printf("\t tempo2 -gr photons -in FT1.fits -f par.par\n");
         printf("More options are available. If you need help, please type:\n");
         printf("\t tempo2 -gr photons -h\n");
         exit(1);
     }
     if (!phase_replace && !output_file) {
-        printf("Warning: neither -phase nor -output were selected\n");
-        printf("so while phases will be calculated they will not\n");
+        printf("Warning: neither -fitsoutput nor -textoutput were selected\n");
+        printf("so while phases will be calculated they will not be\n");
         printf("recorded anywhere.\n");
     }
     if (output_file)
@@ -243,22 +262,32 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     // FT1 file
     // ------------------------------------------------- */
 
-    if (!fits_open_file(&ft1,FT1, READWRITE, &open_status))
+    if (!fits_open_file(&ft_in,FT_in, READWRITE, &open_status))
     {
-        int n_hdu;
-        for (n_hdu = 1; n_hdu<3; n_hdu++) {
+        int n_hdu=1;
+        while(1) {
             // metadata sometimes in second HDU
             // e.g. RXTE data
+            // FIXME: deal with any number of HDUs
             int kw_status;
             char value[80];
             char comment[80];
             double mjd_ref_t;
             int mjdi = 0;
 
-            fits_movabs_hdu(ft1,n_hdu,NULL,&status);
+            status = 0;
+            if (fits_movabs_hdu(ft_in,n_hdu++,NULL,&status)) {
+                if (status==END_OF_FILE) {
+                    status=0;
+                    break;
+                } else {
+                    fits_report_error(stderr,status);
+                    exit(14);
+                }
+            }
 
             kw_status = 0;
-            fits_read_key(ft1, TSTRING, (char*)"TIMESYS", 
+            fits_read_key(ft_in, TSTRING, (char*)"TIMESYS", 
                     (void*)value, comment, &kw_status);
             if (kw_status<=0) {
                 timesys_found = 1;
@@ -269,7 +298,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
             }
 
             kw_status = 0;
-            fits_read_key(ft1, TSTRING, (char*)"TIMEREF", 
+            fits_read_key(ft_in, TSTRING, (char*)"TIMEREF", 
                     (void*)value, comment, &kw_status);
             if (kw_status<=0) {
                 timeref_found = 1;
@@ -281,7 +310,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
             if (!mjd_ref_set) {
                 kw_status = 0;
-                fits_read_key(ft1, TDOUBLE, (char*)"MJDREFI", 
+                fits_read_key(ft_in, TDOUBLE, (char*)"MJDREFI", 
                         (void*)&mjd_ref_t, comment, &kw_status);
                 if (kw_status<=0) {
                     mjd_ref = mjd_ref_t;
@@ -289,7 +318,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
                     mjdi = 1;
                 } 
                 kw_status = 0;
-                fits_read_key(ft1, TDOUBLE, (char*)"MJDREFF", 
+                fits_read_key(ft_in, TDOUBLE, (char*)"MJDREFF", 
                         (void*)&mjd_ref_t, comment, &kw_status);
                 if (kw_status<=0) {
                     if (!mjdi) {
@@ -302,7 +331,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
             }
             if (!mjd_ref_set) {
                 kw_status = 0;
-                fits_read_key(ft1, TDOUBLE, (char*)"MJDREF", 
+                fits_read_key(ft_in, TDOUBLE, (char*)"MJDREF", 
                         (void*)&mjd_ref_t, comment, &kw_status);
                 if (kw_status<=0) {
                     mjd_ref = mjd_ref_t;
@@ -322,70 +351,111 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
             exit(3);
         }
 
-        fits_movabs_hdu(ft1,2,NULL,&status);
+        if (!event_hdu_set) {
+            status = 0;
+            if (fits_movnam_hdu(ft_in, ANY_HDU, (char*)"EVENTS", 0, &status)) {
+                fits_report_error(stderr, status);
+                fprintf(stderr, "Unable to find HDU called 'EVENTS'; try -hdu\n");
+                exit(13);
+            }
+            fits_get_hdu_num(ft_in, &event_hdu);
+        }
+        
+        fits_get_num_rows(ft_in, &nrows_FT1, &status);
+        fits_get_num_cols(ft_in, &ncols_FT1, &status);
 
-        fits_get_num_rows(ft1, &nrows_FT1, &status);
-        fits_get_num_cols(ft1, &ncols_FT1, &status);
-
-        fits_get_colname(ft1,CASEINSEN,timecol,colname,&FT1_time_col,&status);
+        fits_get_colname(ft_in,CASEINSEN,timecol,colname,&FT1_time_col,&status);
         if (status>0) {
             int c, c_status;
             char colname[80];
             char *templt=(char*)"*";
             fprintf(stderr, "No column called %s in %s; try using -timecol\n",
-                    timecol, FT1);
+                    timecol, FT_in);
             fprintf(stderr, "Column names are:\n");
             for (c=1;c<=ncols_FT1;c++) {
-                fits_get_colname(ft1, CASESEN, templt, colname, &c, &c_status);
+                fits_get_colname(ft_in, CASESEN, templt, colname, &c, &c_status);
                 fprintf(stderr,"\t%s\n",colname);
             }
             exit(4);
+        }
+        if (phase_replace) {
+            int c, c_status=0;
+            char colname[80];
+            fits_get_colname(ft_in,CASEINSEN,phasecol,colname,&c,&c_status);
+            if (c_status>0) {
+                printf("%s not found\n", phasecol);
+                fits_report_error(stderr, c_status);
+                phasecol_exists = 0;
+            } else {
+                printf("%s found\n", phasecol);
+                phasecol_exists = 1;
+            }
         }
         
         //
         
         for (i=1;i<=nrows_FT1;i++)
         {
-            fits_read_col_dbl(ft1,FT1_time_col,i,1,1,nulval,&temptime,&anynul,&status);
+            fits_read_col_dbl(ft_in,FT1_time_col,i,1,1,nulval,&temptime,&anynul,&status);
             if (temptime < minFT1time) minFT1time = temptime;
             if (temptime > maxFT1time) maxFT1time = temptime;
-        }
-        
-        //
-
-        if (phase_replace)
-        {
-            fits_get_colname(ft1,CASESEN,phasecol,colname,&FT1_phase_col,&status);
-            
-            if (status != 0)
-            {
-                    fits_insert_col(ft1,ncols_FT1 + 1,phasecol,(char*)"1D", &status2);
-                            
-                    if (status2 != 0)
-                    {
-                            fits_get_errstatus( status2, error_buffer);
-                            printf( "fits_insert_col: %s\n", error_buffer);
-                            exit(-1);
-                    }
-            }
-                        
-            status = 0;
-            fits_get_colname(ft1,CASESEN,phasecol,colname,&FT1_phase_col,&status);
         }
     }
     
     if (open_status != 0)
     {
-        printf("Can't find %s !\n",FT1);
+        printf("Can't find %s !\n",FT_in);
         exit(-1);
     }
 
-    fits_close_file(ft1, &status);
+    fits_close_file(ft_in, &status);
 
     printf("MJDREF: %Lf\n",mjd_ref);
-    printf("First photon date in FT1: %lf MET (s), MJD %Lf\n",minFT1time,minFT1time/86400.+mjd_ref);
-    printf(" Last photon date in FT1: %lf MET (s), MJD %Lf\n\n",maxFT1time,maxFT1time/86400.+mjd_ref);
+    printf("First photon date in input: %lf MET (s), MJD %Lf\n",minFT1time,minFT1time/86400.+mjd_ref);
+    printf(" Last photon date in input: %lf MET (s), MJD %Lf\n\n",maxFT1time,maxFT1time/86400.+mjd_ref);
     
+    // Copy input file to output file, possibly adding room for a new column
+    if (phase_replace) {
+        char FT_in_filter[MAX_FILELEN+20];
+        int status=0, ii=1;
+
+        if (phasecol_exists) {
+            printf("Replacing existing column %s\n", phasecol);
+            strcpy(FT_in_filter, FT_in);
+        } else {
+            printf("Adding new column %s\n", phasecol);
+            sprintf(FT_in_filter, "%s[%d][col *;%s = 0.0]", FT_in, event_hdu-1, phasecol);
+        }
+
+        printf("Copying photons from %s to %s\n", FT_in_filter, FT_out);
+        if (!fits_open_file(&ft_in, FT_in_filter, READONLY, &status)) {
+            // Record the column number for later
+            if (fits_movabs_hdu(ft_in,event_hdu,NULL,&status) || fits_get_colname(ft_in,CASEINSEN,phasecol,colname,&FT1_phase_col,&status)) {
+                fprintf(stderr, "Bizarre: unable to find phase column %s even after trying to create it.\n", phasecol);
+                fits_report_error(stderr, status);
+                exit(11);
+            }
+            if (!fits_create_file(&ft_out, FT_out,  &status)) {
+                if (0) {
+                    while (!fits_movabs_hdu(ft_in, i++, NULL, &status))
+                        fits_copy_hdu(ft_in, ft_out, 1, &status);
+
+                    if (status==END_OF_FILE) status=0;
+                    else printf("Error happened while transferring\n");
+                } else {
+                    fits_copy_file(ft_in, ft_out, 1, 1, 1, &status);
+                }
+
+                fits_close_file(ft_out, &status);
+            }
+            fits_close_file(ft_in, &status);
+        }
+        if (status) {
+            fits_report_error(stderr, status);
+            exit(12);
+        }
+        printf("Copied.\n");
+    }
     // The FT1 file is cut into small tim files with # rows <= 10000
 
     rows_status = 1;
@@ -448,6 +518,18 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     /* ------------------------------------------------- //
     // Main loop
     // ------------------------------------------------- */ 
+    if (fits_open_file(&ft_in,FT_in, READONLY, &status)) {
+        fprintf(stderr, "Problem reading from %s\n", FT_in);
+        exit(6);
+    }
+    fits_movabs_hdu(ft_in,event_hdu,NULL,&status);
+
+    if (fits_open_file(&ft_out,FT_out, READWRITE, &open_status)) {
+        fprintf(stderr, "Problem writing to %s\n", FT_out);
+        fits_report_error(stderr, open_status);
+        exit(7);
+    }
+    fits_movabs_hdu(ft_out,event_hdu,NULL,&status);
 
     while (rows_left > 0)
     {
@@ -456,18 +538,12 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         // Acquisition of the TOAs in MET TDB
         j = 0;
 
-        if (!fits_open_file(&ft1,FT1, READONLY, &status))
+        for (i=rows_status;i<rows_status + nrows2;i++)
         {
-            fits_movabs_hdu(ft1,2,NULL,&status);
-
-            for (i=rows_status;i<rows_status + nrows2;i++)
-            {
-                fits_read_col_dbl(ft1,FT1_time_col,i,1,1,nulval,&time_MET_TDB[j],&anynul,&status);
-                j++;
-            }
+            fits_read_col_dbl(ft_in,FT1_time_col,i,1,1,nulval,&time_MET_TDB[j],&anynul,&status);
+            j++;
         }
 
-        fits_close_file(ft1, &status);
 
 
         // A temporary file is created. TOAs in MJD TT are stored is this file
@@ -640,20 +716,14 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         // ------------------------------------------------- //
         if (phase_replace)
         {
-            if (!fits_open_file(&ft1,FT1, READWRITE, &open_status))
-                {
-                fits_movabs_hdu(ft1,2,NULL,&status);
-                
-                for (event2=rows_status;event2<rows_status+nrows2;event2++)
-                {
-                    if (graph == 0) i = event2 - rows_status;
-                    else i = event2 - 1;
-                
-                    fits_write_col_flt(ft1,FT1_phase_col,event2,1,1,&phase[i],&status);
-                }
+            for (event2=rows_status;event2<rows_status+nrows2;event2++)
+            {
+                if (graph == 0) i = event2 - rows_status;
+                else i = event2 - 1;
+            
+                fits_write_col_flt(ft_out,FT1_phase_col,event2,1,1,&phase[i],&status);
             }
 
-            fits_close_file(ft1, &status);      
         }
 
         /* ------------------------------------------------- //
@@ -665,6 +735,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         
                 event = 0;
     }
+    fits_close_file(ft_out, &status);      
+    fits_close_file(ft_in, &status);
         
     // ------------------------------------------------- //
     // Add a little bit of history to the header
@@ -673,11 +745,11 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     {
             sprintf(history,"Pulse phases calculated with the TEMPO2 photons plugin using ephemeris %s",parFile[0]);
             
-            if (!fits_open_file(&ft1,FT1, READWRITE, &open_status))
+            if (!fits_open_file(&ft_in,FT_in, READWRITE, &open_status))
             {
                     status = 0;
-                    fits_movabs_hdu(ft1,2,NULL,&status);
-                    fits_write_history(ft1,history,&status);
+                    fits_movabs_hdu(ft_in,event_hdu,NULL,&status);
+                    fits_write_history(ft_in,history,&status);
                     
                     if (status != 0)
                     {
@@ -687,7 +759,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
                     }
             }
             
-            fits_close_file(ft1, &status);
+            fits_close_file(ft_in, &status);
     }
 
     if (output_file) fclose(outputf);
