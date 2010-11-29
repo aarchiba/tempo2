@@ -264,7 +264,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     // FT1 file
     // ------------------------------------------------- */
 
-    if (!fits_open_file(&ft_in,FT_in, READWRITE, &open_status))
+    if (!fits_open_file(&ft_in,FT_in, READONLY, &open_status))
     {
         int n_hdu=1;
         while(1) {
@@ -756,11 +756,11 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     {
             sprintf(history,"Pulse phases calculated with the TEMPO2 photons plugin using ephemeris %s",parFile[0]);
             
-            if (!fits_open_file(&ft_in,FT_in, READWRITE, &open_status))
+            if (!fits_open_file(&ft_out,FT_out, READWRITE, &open_status))
             {
                     status = 0;
-                    fits_movabs_hdu(ft_in,event_hdu,NULL,&status);
-                    fits_write_history(ft_in,history,&status);
+                    fits_movabs_hdu(ft_out,event_hdu,NULL,&status);
+                    fits_write_history(ft_out,history,&status);
                     
                     if (status != 0)
                     {
@@ -770,7 +770,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
                     }
             }
             
-            fits_close_file(ft_in, &status);
+            fits_close_file(ft_out, &status);
     }
 
     if (output_file) fclose(outputf);
