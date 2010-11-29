@@ -71,14 +71,12 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     int  ophase        = 0;
     int  graph         = 0;
     int  output_file   = 0;
-    int  output_pos    = 0;
     int  phase_replace = 0;
     int  phase_col_set = 0;
 
     double intpart;
 
     FILE *outputf;
-    FILE *output_posf;
     FILE *temp_tim;
 
     /* ------------------------------------------------- //
@@ -774,7 +772,6 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     }
 
     if (output_file) fclose(outputf);
-    if (output_pos)  fclose(output_posf);
 
     printf("Done with %s\n",psr[0].name);
 
