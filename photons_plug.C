@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
 #include <math.h>
 #include "../tempo2.h"
 #include "../ifteph.h"
@@ -435,6 +437,14 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
                 fprintf(stderr, "Bizarre: unable to find phase column %s even after trying to create it.\n", phasecol);
                 fits_report_error(stderr, status);
                 exit(11);
+            }
+            if (unlink(FT_out)) {
+                if (errno!=ENOENT) {
+                    perror("Problem deleting output file");
+                    exit(15);
+                }
+            } else {
+                printf("Deleted old version of %s\n", FT_out);
             }
             if (!fits_create_file(&ft_out, FT_out,  &status)) {
                 // Copy all HDUs one-by-one
