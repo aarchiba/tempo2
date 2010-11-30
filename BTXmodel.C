@@ -98,7 +98,7 @@ double BTXmodel(pulsar *psr,int p,int ipos,int param,int arr)
       //printf("Setting fb[0] to %g from pb\n", fb[0]);
   }
   if (psr[p].param[param_pbdot].paramSet[0] && !psr[p].param[param_fbn].paramSet[1]) {
-      fb[1] = -(psr[p].param[param_pbdot].val[0]*SECDAY)*fb[0]*fb[0];
+      fb[1] = -(psr[p].param[param_pbdot].val[0])*fb[0]*fb[0];
       //printf("Setting fb[1] to %g from pbdot\n", fb[1]);
   }
 
