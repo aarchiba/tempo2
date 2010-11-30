@@ -28,6 +28,96 @@ longdouble tdb2tcb(longdouble mjd) {
     return mjd + IAU_KINV*(mjd-IFTE_MJD0);
 }
 
+int find_event_hdu(fitsfile*ft_in) {
+    int event_hdu;
+    int status = 0;
+    if (fits_movnam_hdu(ft_in, ANY_HDU, (char*)"EVENTS", 0, &status)) {
+        fits_report_error(stderr, status);
+        fprintf(stderr, "Unable to find HDU called 'EVENTS'; try using -hdu to specify the number\n");
+        exit(13);
+    }
+    fits_get_hdu_num(ft_in, &event_hdu);
+    return event_hdu;
+}
+longdouble get_mjdref(fitsfile*ft_in) {
+    int status = 0;
+    int mjdreff_set = 0;
+    int mjdrefi_set = 0;
+    double mjdref;
+    double mjdrefi;
+    double mjdreff;
+    char comment[81];
+    if(fits_movabs_hdu(ft_in,1,NULL,&status)) {
+        fits_report_error(stderr,status);
+        exit(17);
+    }
+    while (1) {
+
+        status = 0;
+        if (!fits_read_key(ft_in, TDOUBLE, (char*)"MJDREFI", 
+                    (void*)&mjdrefi, comment, &status)) {
+            mjdrefi_set = 1;
+            if (mjdreff_set)
+                return ((longdouble)mjdrefi)+mjdreff;
+        }
+
+        status = 0;
+        if (!fits_read_key(ft_in, TDOUBLE, (char*)"MJDREFF", 
+                    (void*)&mjdreff, comment, &status)) {
+            mjdreff_set = 1;
+            if (mjdrefi_set)
+                return ((longdouble)mjdrefi)+mjdreff;
+        }
+
+        status = 0;
+        if (!fits_read_key(ft_in, TDOUBLE, (char*)"MJDREF", 
+                    (void*)&mjdref, comment, &status)) {
+            return mjdref;
+        }
+
+        status=0;
+        if(fits_movrel_hdu(ft_in,1,NULL,&status)) {
+            if (status==END_OF_FILE)
+                break;
+            fits_report_error(stderr,status);
+            exit(18);
+        }
+    }
+
+    fprintf(stderr,"Error: MJDREF or MJDREFI/MJDREFF not found; try specifying -mjdref\n");
+    exit(3);
+}
+void check_barycentered(fitsfile*ft_in, int event_hdu) {
+    char comment[81];
+    char value[81];
+    int status = 0;
+    if (fits_movabs_hdu(ft_in,event_hdu,NULL,&status)) {
+        fits_report_error(stderr,status);
+        exit(14);
+    }
+    status = 0;
+    if (fits_read_key(ft_in, TSTRING, (char*)"TIMESYS", 
+            (void*)value, comment, &status)) {
+        fprintf(stderr,"Assuming TIMESYS is TDB\n");
+    } else {
+        if (strcmp(value,"TDB")) {
+            fprintf(stderr,"Error: TIMESYS is %s rather than TDB; input file has not been barycentered\n", value);
+            exit(2);
+        }
+    } 
+    status = 0;
+    if( fits_read_key(ft_in, TSTRING, (char*)"TIMEREF", 
+            (void*)value, comment, &status)) {
+        fprintf(stderr,"Warning: assuming TIMEREF is SOLARSYSTEM\n");
+    } else {
+        if (strcmp(value,"SOLARSYSTEM")) {
+            fprintf(stderr,"Error: TIMEREF is %s rather than SOLARSYSTEM\n", value);
+            exit(2);
+        }
+    }
+}
+
+
 extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr) 
 {
     // Provide basic information
@@ -220,7 +310,6 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
             printf("\t -timecol XXX: times will be read from column XXX. Default is TIME\n");
             printf("\t -mjdref XXX: use XXX as MJDREF instead of looking in header\n");
             printf("\t -h: this help.\n");
-            printf("===============================================");
             printf("===============================================\n");
             exit(0);            
         }
@@ -248,6 +337,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         printf("Warning: neither -fitsoutput nor -textoutput were selected\n");
         printf("so while phases will be calculated they will not be\n");
         printf("recorded anywhere.\n");
+        // FIXME: should this be an error?
     }
     if (output_file)
     {
@@ -264,103 +354,15 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
     if (!fits_open_file(&ft_in,FT_in, READONLY, &open_status))
     {
-        int n_hdu=1;
-        while(1) {
-            // metadata sometimes in second HDU
-            // e.g. RXTE data
-            // FIXME: deal with any number of HDUs
-            int kw_status;
-            char value[80];
-            char comment[80];
-            double mjd_ref_t;
-            int mjdi = 0;
-
-            status = 0;
-            if (fits_movabs_hdu(ft_in,n_hdu++,NULL,&status)) {
-                if (status==END_OF_FILE) {
-                    status=0;
-                    break;
-                } else {
-                    fits_report_error(stderr,status);
-                    exit(14);
-                }
-            }
-
-            kw_status = 0;
-            fits_read_key(ft_in, TSTRING, (char*)"TIMESYS", 
-                    (void*)value, comment, &kw_status);
-            if (kw_status<=0) {
-                timesys_found = 1;
-                if (strcmp(value,"TDB")) {
-                    fprintf(stderr,"Error: TIMESYS is %s rather than TDB; input file has not been barycentered\n", value);
-                    exit(2);
-                }
-            }
-
-            kw_status = 0;
-            fits_read_key(ft_in, TSTRING, (char*)"TIMEREF", 
-                    (void*)value, comment, &kw_status);
-            if (kw_status<=0) {
-                timeref_found = 1;
-                if (strcmp(value,"SOLARSYSTEM")) {
-                    fprintf(stderr,"Error: TIMEREF is %s rather than SOLARSYSTEM\n", value);
-                    exit(2);
-                }
-            }
-
-            if (!mjd_ref_set) {
-                kw_status = 0;
-                fits_read_key(ft_in, TDOUBLE, (char*)"MJDREFI", 
-                        (void*)&mjd_ref_t, comment, &kw_status);
-                if (kw_status<=0) {
-                    mjd_ref = mjd_ref_t;
-                    mjd_ref_set = 0; // Just the integer part doesn't set it
-                    mjdi = 1;
-                } 
-                kw_status = 0;
-                fits_read_key(ft_in, TDOUBLE, (char*)"MJDREFF", 
-                        (void*)&mjd_ref_t, comment, &kw_status);
-                if (kw_status<=0) {
-                    if (!mjdi) {
-                        fprintf(stderr,"Error: MJDREFF found, but MJDREFI missing\n");
-                        exit(2);
-                    }
-                    mjd_ref += mjd_ref_t;
-                    mjd_ref_set = 1; // 
-                } 
-            }
-            if (!mjd_ref_set) {
-                kw_status = 0;
-                fits_read_key(ft_in, TDOUBLE, (char*)"MJDREF", 
-                        (void*)&mjd_ref_t, comment, &kw_status);
-                if (kw_status<=0) {
-                    mjd_ref = mjd_ref_t;
-                    mjd_ref_set = 1;
-                } 
-            }
-        }
-
-        if (!timesys_found) {
-            fprintf(stderr,"Assuming TIMESYS is TDB\n");
-        }
-        if (!timeref_found) {
-            fprintf(stderr,"Warning: assuming TIMEREF is SOLARSYSTEM\n");
-        } 
-        if (!mjd_ref_set) {
-            fprintf(stderr,"Error: MJDREF or MJDREFI/MJDREFF not found; try specifying -mjdref\n");
-            exit(3);
-        }
 
         if (!event_hdu_set) {
-            status = 0;
-            if (fits_movnam_hdu(ft_in, ANY_HDU, (char*)"EVENTS", 0, &status)) {
-                fits_report_error(stderr, status);
-                fprintf(stderr, "Unable to find HDU called 'EVENTS'; try -hdu\n");
-                exit(13);
-            }
-            fits_get_hdu_num(ft_in, &event_hdu);
+            event_hdu = find_event_hdu(ft_in);
         }
+        check_barycentered(ft_in, event_hdu);
+        mjd_ref = get_mjdref(ft_in);
         
+        fits_movabs_hdu(ft_in,event_hdu,NULL,&status);
+
         fits_get_num_rows(ft_in, &nrows_FT1, &status);
         fits_get_num_cols(ft_in, &ncols_FT1, &status);
 
@@ -383,11 +385,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
             char colname[80];
             fits_get_colname(ft_in,CASEINSEN,phasecol,colname,&c,&c_status);
             if (c_status>0) {
-                printf("%s not found\n", phasecol);
-                fits_report_error(stderr, c_status);
                 phasecol_exists = 0;
             } else {
-                printf("%s found\n", phasecol);
                 phasecol_exists = 1;
             }
         }
@@ -404,7 +403,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     
     if (open_status != 0)
     {
-        printf("Can't find %s !\n",FT_in);
+        fprintf(stderr,"Can't read input file '%s'!\n",FT_in);
+        fits_report_error(stderr,status);
         exit(-1);
     }
 
@@ -438,7 +438,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
             }
             if (unlink(FT_out)) {
                 if (errno!=ENOENT) {
-                    perror("Problem deleting output file");
+                    perror("Problem deleting old output file");
                     exit(15);
                 }
             } else {
@@ -533,12 +533,14 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     }
     fits_movabs_hdu(ft_in,event_hdu,NULL,&status);
 
-    if (fits_open_file(&ft_out,FT_out, READWRITE, &open_status)) {
-        fprintf(stderr, "Problem writing to %s\n", FT_out);
-        fits_report_error(stderr, open_status);
-        exit(7);
+    if (phase_replace) {
+        if (fits_open_file(&ft_out,FT_out, READWRITE, &open_status)) {
+            fprintf(stderr, "Problem writing to %s\n", FT_out);
+            fits_report_error(stderr, open_status);
+            exit(7);
+        }
+        fits_movabs_hdu(ft_out,event_hdu,NULL,&status);
     }
-    fits_movabs_hdu(ft_out,event_hdu,NULL,&status);
 
     while (rows_left > 0)
     {
@@ -744,7 +746,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
         
                 event = 0;
     }
-    fits_close_file(ft_out, &status);      
+    if (phase_replace)
+        fits_close_file(ft_out, &status);      
     fits_close_file(ft_in, &status);
         
     // ------------------------------------------------- //
