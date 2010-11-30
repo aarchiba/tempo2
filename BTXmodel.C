@@ -127,11 +127,16 @@ double BTXmodel_i(pulsar *psr,int p,int ipos,int param,int arr)
     }
 
   asini = x[0] + x[1]*tt0;
+  //printf("asini: %g %g ", x[0], x[1]*tt0);
   fac = 1.0;
   for (i=0; i<MAX_BTX_DERIVS; i++) {
+      double t;
       fac /= i+2;
-      asini += x[i+2]*fac*pow(tt0,i+2);
+      t = x[i+2]*fac*pow(tt0,i+2);
+      //printf("%g ", t);
+      asini += t;
   }
+  //printf("\n");
 
 
   if (psr[p].param[param_omdot].paramSet[0] == 1) omdot = psr[p].param[param_omdot].val[0];
@@ -227,13 +232,13 @@ double BTXmodel_i(pulsar *psr,int p,int ipos,int param,int arr)
      * */
       /* FIXME: how do I test this? */
       fac = 1.0;
-      for (i=0;i<arr;i++) fac/=i+1;
-      return -2.0*M_PI*r*s*fb[0]*pow(tt0,arr+1)*fac;  
+      for (i=0;i<arr+1;i++) fac/=i+1;
+      return -2.0*M_PI*r*s*pow(tt0,arr+1)*fac;  
   } else if (param==param_xdotn) {
       /* FIXME: how do I test this? */
-      fac = 2.0;
+      fac = 0.5;
       for (i=0;i<arr;i++) fac/=i+3;
-      return (som*(cbe-ecc) + com*sbe*sqrt(tt))*pow(tt0,i+2)*fac;
+      return (som*(cbe-ecc) + com*sbe*sqrt(tt))*pow(tt0,arr+2)*fac;
   }
   return 0.0;
 }
