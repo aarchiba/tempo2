@@ -583,25 +583,6 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
 
         /* ------------------------------------------------- //
-        // Delays, corrections and positions
-        // ------------------------------------------------- */
-        if (0) {
-            for (i=0;i<nrows2;i++)
-            {
-                psr->obsn[i].deleted = 0;
-                psr->obsn[i].nFlags = 0;
-                psr->obsn[i].delayCorr = 0; // Don't correct delays for event i
-                psr->obsn[i].clockCorr = 0; // Don't make clock correction TT -> TDB
-
-                // Position replacements
-                for (k=0;k<3;k++) 
-                {
-                    psr[0].obsn[i].observatory_earth[k] = 0;
-                }
-            }
-        }
-
-        /* ------------------------------------------------- //
         // Calculation of the event phases - step 1
         // Step 1 is for all but the last photon
         // ------------------------------------------------- */
