@@ -110,3 +110,14 @@ As this code is based on the Fermi plugin, part of tempo 2 and licensed
 under the GPL, this plugin is licensed under the GPL. In short, in the
 unlikely event that you distribute binaries, you must also distribute
 the source code.
+
+History
+-------
+
+0.3 Improvements to FITS handling.
+    Instead of modifying the input file, it now produces an output FITS
+    file. Additionally, runtimes for very large (e.g. 500 MB) FITS files
+    have been improved from hours down to minutes. Also more intelligent
+    about adapting to different input file layouts.
+
+0.2 First public release.
