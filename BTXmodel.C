@@ -47,7 +47,7 @@
  *
  * */
 
-double BTXmodel(pulsar *psr,int p,int ipos,int param,int arr)
+double BTXmodel_i(pulsar *psr,int p,int ipos,int param,int arr)
 {
   double torb;
   double tt0;
@@ -227,7 +227,7 @@ double BTXmodel(pulsar *psr,int p,int ipos,int param,int arr)
      * */
       /* FIXME: how do I test this? */
       fac = 1.0;
-      for (i=0;i<arr;i++) fac/=i+2;
+      for (i=0;i<arr;i++) fac/=i+1;
       return -2.0*M_PI*r*s*fb[0]*pow(tt0,arr+1)*fac;  
   } else if (param==param_xdotn) {
       /* FIXME: how do I test this? */
@@ -237,10 +237,36 @@ double BTXmodel(pulsar *psr,int p,int ipos,int param,int arr)
   }
   return 0.0;
 }
+double BTXmodel(pulsar *psr,int p,int ipos,int param,int arr)
+{
+    double h, v, l, r, d;
+    if (param==-1) return BTXmodel_i(psr,p,ipos,param,arr);
+
+    d = BTXmodel_i(psr,p,ipos,param,arr);
+    printf("Derivative of obs %d with respect to %s:\t%g\n",
+            ipos, psr[p].param[param].label[arr], d);
+    if (param>=MAX_PARAMS || arr>=psr->param[param].aSize) {
+        printf("Bogus: %d, %d\n", param, arr);
+        return d;
+    }
+    v = psr[p].param[param].val[arr];
+    h = psr[p].param[param].err[arr];
+    if (h==0) {
+        h=v*1e-8;
+    }
+    psr[p].param[param].val[arr] = v-h;
+    l = BTXmodel_i(psr,p,ipos,-1,arr);
+    psr[p].param[param].val[arr] = v+h;
+    r = BTXmodel_i(psr,p,ipos,-1,arr);
+    psr[p].param[param].val[arr] = v;
+
+    printf("numerical:\t%g\n", (r-l)/(2*h));
+    return d;
+}
 
 void updateBTX(pulsar *psr,double val,double err,int pos,int arr)
 {
-  //printf("Updating parameter %s by %g (err %g)\n", psr->param[pos].label[arr], val, err);
+  printf("Updating parameter %s by %g (err %g)\n", psr->param[pos].label[arr], val, err);
   if (pos==param_pb)
     {
       psr->param[param_pb].val[0] += val;

@@ -169,6 +169,9 @@ void initialiseOne (pulsar *psr, int noWarnings, int fullSetup)
   psr->T2globalEfac = 1; // A global multiplying factor
 
   allocateMemory(psr,0);
+  for (j=0;j<MAX_PARAMS;j++) {
+
+  }
   /*  psr->param[param_track].paramSet[0]=1;
   psr->param[param_track].val[0]=0.0;
   psr->param[param_track].prefit[0]=0.0;*/
@@ -505,7 +508,9 @@ void allocateMemory(pulsar *psr, int realloc)
       for (j=0;j<psr->param[i].aSize;j++)
 	{
 	  psr->param[i].label[j] = (char *)malloc(sizeof(char)*100);
+	  psr->param[i].label[j][0] = (char)0;
 	  psr->param[i].shortlabel[j] = (char *)malloc(sizeof(char)*100);
+	  psr->param[i].shortlabel[j][0] = (char)0;
 
 	  psr->param[i].fitFlag[j]  = 0;
 	  psr->param[i].paramSet[j] = 0;
