@@ -127,8 +127,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     printf("Author:              Anne Archibald\n");
     printf("                     based on the fermi plugin v5.2\n");
     printf("                     by Lucas Guillemot\n");
-    printf("Updated:             19 November 2010\n");
-    printf("Version:             0.2\n");
+    printf("Updated:             30 November 2010\n");
+    printf("Version:             0.3\n");
     printf("------------------------------------------\n");
     printf("\n");
 
