@@ -6,7 +6,7 @@
 #include <math.h>
 #include "../tempo2.h"
 #include "../ifteph.h"
-#include "/usr/include/fitsio.h"
+#include <fitsio.h>
 #include <time.h>
 
 using namespace std;        /* Is this required for a plugin ? Yes, for Linux */

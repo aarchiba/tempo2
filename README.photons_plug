@@ -16,11 +16,12 @@ Generality
 
 This plugin has been tested on barycentered FITS files from XMM/Newton,
 Chandra, Swift, RXTE, and Fermi. It has a good chance of automatically
-working on data from other missions that use a similar file format, and
-it allows manual specification of a time column name and a reference
-MJD at which MET was 0. It does not yet support time columns in units
-other than seconds (e.g. MJDs), event data in HDUs other than the second,
-or barycentered photons in TCB rather than TDB.
+working on data from other missions that use a similar file format,
+and it allows manual specification of a time column name, a reference
+MJD at which MET was 0, and the HDU in which the events are stored (only
+necessary if that HDU is not called "EVENTS"). It does not yet support
+time columns in units other than seconds (e.g. MJDs) or barycentered
+photons in TCB rather than TDB.
 
 The ephemeris can be any ephemeris tempo 2 can understand; in particular,
 the ephemeris can be expressed in either TCB (the default for tempo 2)
@@ -70,6 +71,17 @@ your system libraries. This may prevent this plugin from running; if so,
 try "unset LD_LIBRARY_PATH" or "unsetenv LD_LIBRARY_PATH", which will
 allow the plugin to work again.
 
+Testing
+-------
+
+This package includes a directory, plugin/photons_test, with a number
+of sample data sets and a short script, test.py, that runs tempo2 on
+each and reports the phase and MJD difference from that produced on the
+developer's system. Once tempo2 is working and in your path, and TEMPO2
+is set, running this script should confirm that the plugin is working
+correctly. You can also examine the output files, FITS and text, to see
+whether any discrepancies are plausible.
+
 Use
 ---
 
@@ -77,10 +89,10 @@ For help:
 $ tempo2 -gr photons -h
 
 To produce a text file listing photon phases:
-$ tempo2 -gr photons -ft1 events.fits -f ephemeris.par -output
+$ tempo2 -gr photons -in events.fits -f ephemeris.par -textoutput file.txt
 
-To add a phase column to the input file (!):
-$ tempo2 -gr photons -ft1 events.fits -f ephemeris.par -phase
+To produce a FITS file with a PULSE_PHASE column:
+$ tempo2 -gr photons -in events.fits -f ephemeris.par -fitsoutput file.fits
 
 
 Support
