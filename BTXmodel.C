@@ -47,7 +47,7 @@
  *
  * */
 
-double BTXmodel_i(pulsar *psr,int p,int ipos,int param,int arr)
+double BTXmodel(pulsar *psr,int p,int ipos,int param,int arr)
 {
   double torb;
   double tt0;
@@ -81,25 +81,19 @@ double BTXmodel_i(pulsar *psr,int p,int ipos,int param,int arr)
 
   /* Handle input parameters */
   /* load fb and x */
-  //printf("Setting fb to");
   for (i=0; i<MAX_BTX_DERIVS; i++) {
       if (psr[p].param[param_fbn].paramSet[i]) {
           fb[i] = psr[p].param[param_fbn].val[i];
-          //printf("\t%g",fb[i]);
       } else {
           fb[i] = 0;
-          //printf("\t--",fb[i]);
       }
   }
-  //printf("\n");
   /* convert PB and PBDOT to FB0 and FB1 if necessary */
   if (psr[p].param[param_pb].paramSet[0] && !psr[p].param[param_fbn].paramSet[0]) {
       fb[0] = 1./pb;
-      //printf("Setting fb[0] to %g from pb\n", fb[0]);
   }
   if (psr[p].param[param_pbdot].paramSet[0] && !psr[p].param[param_fbn].paramSet[1]) {
       fb[1] = -(psr[p].param[param_pbdot].val[0])*fb[0]*fb[0];
-      //printf("Setting fb[1] to %g from pbdot\n", fb[1]);
   }
 
   if (psr[p].param[param_a1].paramSet[0]) {
@@ -127,16 +121,13 @@ double BTXmodel_i(pulsar *psr,int p,int ipos,int param,int arr)
     }
 
   asini = x[0] + x[1]*tt0;
-  //printf("asini: %g %g ", x[0], x[1]*tt0);
   fac = 1.0;
   for (i=0; i<MAX_BTX_DERIVS; i++) {
       double t;
       fac /= i+2;
       t = x[i+2]*fac*pow(tt0,i+2);
-      //printf("%g ", t);
       asini += t;
   }
-  //printf("\n");
 
 
   if (psr[p].param[param_omdot].paramSet[0] == 1) omdot = psr[p].param[param_omdot].val[0];
@@ -184,15 +175,9 @@ double BTXmodel_i(pulsar *psr,int p,int ipos,int param,int arr)
 
   torb = -q+(2*M_PI/pb)*q*r*s + torb;
 
-  //printf("tt0:\t%g\tphase:\t%d\t%g\ttorb:\t%g\n", tt0, norbits, (orbits-norbits), torb);
   /* torb is the time correction to move the pulses to the binary barycenter */
   if (param==-1) return torb;
 
-  /* FIXME: make sure I know what this does */
-  /* FIXME: I think it needs to be able to return the partial derivative
-   * of torb with respect to each parameter
-   * Unfortunately if these are wrong, convergence is slow and the
-   * uncertainties are wrong, but failure is not otherwise obvious */
   if (param==param_pb)
     return -2.0*M_PI*r*s/pb*SECDAY*tt0/(SECDAY*pb) * SECDAY;  /* fctn(12+j) */
   else if (param==param_a1)
@@ -242,10 +227,10 @@ double BTXmodel_i(pulsar *psr,int p,int ipos,int param,int arr)
   }
   return 0.0;
 }
-double BTXmodel(pulsar *psr,int p,int ipos,int param,int arr)
+double BTXmodel_debug(pulsar *psr,int p,int ipos,int param,int arr)
 {
     double h, v, l, r, d;
-    if (param==-1) return BTXmodel_i(psr,p,ipos,param,arr);
+    if (param==-1) return BTXmodel(psr,p,ipos,param,arr);
 
     d = BTXmodel_i(psr,p,ipos,param,arr);
     printf("Derivative of obs %d with respect to %s:\t%g\n",
