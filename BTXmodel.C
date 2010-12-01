@@ -230,7 +230,7 @@ double BTXmodel_debug(pulsar *psr,int p,int ipos,int param,int arr)
     double h, v, l, r, d;
     if (param==-1) return BTXmodel(psr,p,ipos,param,arr);
 
-    d = BTXmodel_i(psr,p,ipos,param,arr);
+    d = BTXmodel(psr,p,ipos,param,arr);
     printf("Derivative of obs %d with respect to %s:\t%g\n",
             ipos, psr[p].param[param].label[arr], d);
     if (param>=MAX_PARAMS || arr>=psr->param[param].aSize) {
@@ -243,9 +243,9 @@ double BTXmodel_debug(pulsar *psr,int p,int ipos,int param,int arr)
         h=v*1e-8;
     }
     psr[p].param[param].val[arr] = v-h;
-    l = BTXmodel_i(psr,p,ipos,-1,arr);
+    l = BTXmodel(psr,p,ipos,-1,arr);
     psr[p].param[param].val[arr] = v+h;
-    r = BTXmodel_i(psr,p,ipos,-1,arr);
+    r = BTXmodel(psr,p,ipos,-1,arr);
     psr[p].param[param].val[arr] = v;
 
     printf("numerical:\t%g\n", (r-l)/(2*h));
