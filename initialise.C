@@ -169,9 +169,6 @@ void initialiseOne (pulsar *psr, int noWarnings, int fullSetup)
   psr->T2globalEfac = 1; // A global multiplying factor
 
   allocateMemory(psr,0);
-  for (j=0;j<MAX_PARAMS;j++) {
-
-  }
   /*  psr->param[param_track].paramSet[0]=1;
   psr->param[param_track].val[0]=0.0;
   psr->param[param_track].prefit[0]=0.0;*/
