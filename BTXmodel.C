@@ -123,10 +123,8 @@ double BTXmodel(pulsar *psr,int p,int ipos,int param,int arr)
   asini = x[0] + x[1]*tt0;
   fac = 1.0;
   for (i=0; i<MAX_BTX_DERIVS; i++) {
-      double t;
       fac /= i+2;
-      t = x[i+2]*fac*pow(tt0,i+2);
-      asini += t;
+      asini += x[i+2]*fac*pow(tt0,i+2);
   }
 
 
@@ -256,7 +254,7 @@ double BTXmodel_debug(pulsar *psr,int p,int ipos,int param,int arr)
 
 void updateBTX(pulsar *psr,double val,double err,int pos,int arr)
 {
-  printf("Updating parameter %s by %g (err %g)\n", psr->param[pos].label[arr], val, err);
+  //printf("Updating parameter %s by %g (err %g)\n", psr->param[pos].label[arr], val, err);
   if (pos==param_pb)
     {
       psr->param[param_pb].val[0] += val;
