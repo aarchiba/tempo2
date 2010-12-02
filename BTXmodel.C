@@ -47,7 +47,7 @@
  *
  * */
 
-double BTXmodel(pulsar *psr,int p,int ipos,int param,int arr)
+double BTXmodel_i(pulsar *psr,int p,int ipos,int param,int arr)
 {
   double torb;
   double tt0;
@@ -225,36 +225,33 @@ double BTXmodel(pulsar *psr,int p,int ipos,int param,int arr)
   }
   return 0.0;
 }
-double BTXmodel_debug(pulsar *psr,int p,int ipos,int param,int arr)
+double BTXmodel(pulsar *psr,int p,int ipos,int param,int arr)
 {
     double h, v, l, r, d;
-    if (param==-1) return BTXmodel(psr,p,ipos,param,arr);
+    if (param==-1) return BTXmodel_i(psr,p,ipos,param,arr);
 
-    d = BTXmodel(psr,p,ipos,param,arr);
-    printf("Derivative of obs %d with respect to %s:\t%g\n",
+    d = BTXmodel_i(psr,p,ipos,param,arr);
+    printf("Derivative of obs %d with respect to %s:\t%g",
             ipos, psr[p].param[param].label[arr], d);
-    if (param>=MAX_PARAMS || arr>=psr->param[param].aSize) {
-        printf("Bogus: %d, %d\n", param, arr);
-        return d;
-    }
     v = psr[p].param[param].val[arr];
     h = psr[p].param[param].err[arr];
     if (h==0) {
         h=v*1e-8;
     }
     psr[p].param[param].val[arr] = v-h;
-    l = BTXmodel(psr,p,ipos,-1,arr);
+    l = BTXmodel_i(psr,p,ipos,-1,arr);
     psr[p].param[param].val[arr] = v+h;
-    r = BTXmodel(psr,p,ipos,-1,arr);
+    r = BTXmodel_i(psr,p,ipos,-1,arr);
     psr[p].param[param].val[arr] = v;
 
-    printf("numerical:\t%g\n", (r-l)/(2*h));
+    printf("\tnumerical:\t%g\n", (r-l)/(2*h));
     return d;
 }
 
 void updateBTX(pulsar *psr,double val,double err,int pos,int arr)
 {
-  //printf("Updating parameter %s by %g (err %g)\n", psr->param[pos].label[arr], val, err);
+  printf("Updating parameter %s by %g (err %g)\n", psr->param[pos].label[arr], val, err);
+  printf("Value changing from %Lg to %Lg\n", psr->param[pos].val[arr], psr->param[pos].val[arr] + val);
   if (pos==param_pb)
     {
       psr->param[param_pb].val[0] += val;
