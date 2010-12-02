@@ -291,7 +291,7 @@ void tzFit(pulsar *psr,int npsr,longdouble *tmin,double *doppler,double *rms,dou
       tmidMJD = psr->obsn[iref].sat - (int)psr->obsn[iref].sat;
 
       tm = (time_t)((double)afmjd-40587.0)*SECDAY; /* Number of seconds since 01-Jan-70 */
-      timePtr = localtime(&tm);
+      timePtr = gmtime(&tm);
       strftime(date,100,"%d-%b-%y",timePtr);
       if (date[0]=='0') date[0]=' ';
       rphase = psr->obsn[iref].phase;
