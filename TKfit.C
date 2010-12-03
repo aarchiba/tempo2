@@ -99,6 +99,7 @@ void TKleastSquares_svd_psr(double *x,double *y,double *sig,int n,double *p,doub
   double **v,**u;
   double w[nf],wt[nf],sum,wmax;
   int    i,j,k;
+  double *parameterScale;
 
   if (!(designMatrix = (double **)malloc(n*sizeof(double *))))
     {
@@ -123,7 +124,7 @@ void TKleastSquares_svd_psr(double *x,double *y,double *sig,int n,double *p,doub
       if (weight==0) sig[i]=1.0;
     }
   for (i=0;i<nf;i++) v[i] = (double *)malloc(nf*sizeof(double));
-
+  parameterScale = (double *)malloc(nf*sizeof(double));
   /* This routine has been developed from Section 15 in Numerical Recipes */
   
   /* Determine the design matrix - eq 15.4.4 
@@ -145,9 +146,16 @@ void TKleastSquares_svd_psr(double *x,double *y,double *sig,int n,double *p,doub
       b[i] = y[i]/sig[i];
     }
   /* Now carry out the singular value decomposition */
-  //  printf("Decomposition\n");
-  //  printf("Got this far 4\n");
-
+  // rescale parameter values to improve the condition number
+  for (j=0;j<nf;j++) 
+    {
+      parameterScale[j] = 0;
+      for (i=0;i<n;i++) 
+          parameterScale[j]+=designMatrix[i][j]*designMatrix[i][j];
+      parameterScale[j] = 1/sqrt(parameter_scale[j]);
+      for (i=0;i<n;i++) 
+          designMatrix[i][j]*=parameterScale[j];
+    }
   TKsingularValueDecomposition_lsq(designMatrix,n,nf,v,w,u);
   //  printf("Weights\n");
   wmax = TKfindMax_d(w,nf);
@@ -158,7 +166,12 @@ void TKleastSquares_svd_psr(double *x,double *y,double *sig,int n,double *p,doub
   //  printf("Back substitution\n");
   /* Back substitution */
   TKbacksubstitution_svd(v, w, designMatrix, b, p, n, nf);
-  //  printf("Wts\n");
+  // correct fitted parameters for rescaling
+  for (j=0;j<nf;j++) 
+    {
+      p[j]*=parameterScale[j];
+    }
+  
   /* Now form the covariance matrix */
   for (i=0;i<nf;i++)
     {
@@ -173,6 +186,9 @@ void TKleastSquares_svd_psr(double *x,double *y,double *sig,int n,double *p,doub
 	  sum=0.0;
 	  for (k=0;k<nf;k++)
 	    sum+=v[i][k]*v[j][k]*wt[k];
+          // correct covariance matrix for rescaling
+          sum *= parameterScale[i];
+          sum *= parameterScale[j];
 	  cvm[i][j] = cvm[j][i] = sum;
 	}
       e[i] = sqrt(cvm[i][i]);
@@ -200,7 +216,7 @@ void TKleastSquares_svd_psr(double *x,double *y,double *sig,int n,double *p,doub
       for (j=0;j<nf;j++)
 	e[j] *= sqrt(*chisq/(n-nf));
     }
-  //  printf("Done\n");
+  free(parameterScale);
   free(v); 
   free(u); free(designMatrix);
 }
