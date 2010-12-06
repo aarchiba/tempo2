@@ -32,8 +32,7 @@
 #include <math.h>
 #include "tempo2.h"
 
-/* Based on BTmodel.C */
-/* Should agree with bnrybtx.f, but with only one orbit (i.e. no planets) */
+/* Based on BTXmodel.C */
 
 /* Should support:
  * PB
@@ -48,7 +47,7 @@
  * FIXME: better to make orbital frequency vary sinusoidally
  * */
 
-double BTFmodel(pulsar *psr,int p,int ipos,int param,int arr)
+double BTFmodel_i(pulsar *psr,int p,int ipos,int param,int arr)
 {
   double torb;
   double tt0;
@@ -192,6 +191,46 @@ double BTFmodel(pulsar *psr,int p,int ipos,int param,int arr)
   }
   return 0.0;
 }
+double BTFmodel(pulsar *psr,int p,int ipos,int param,int arr)
+{
+    double h, v, l, r, d;
+    if (param==-1) {
+        int i,j;
+        for (i=0;i<MAX_PARAMS;i++)
+            for (j=0;j<psr->param[i].aSize;j++) {
+                if (psr->param[i].paramSet[j]) 
+                    printf("\t%s:\t%Lg\n", 
+                            psr->param[i].label[j], 
+                            psr->param[i].val[j]);
+            }
+
+        printf("Value call\n");
+
+        v = BTFmodel_i(psr,p,ipos,param,arr);
+        printf("returned %g\n", v);
+        return v;
+    }
+
+    d = BTFmodel_i(psr,p,ipos,param,arr);
+    printf("Derivative of obs %d with respect to %s:\t%g",
+            ipos, psr[p].param[param].label[arr], d);
+    v = psr[p].param[param].val[arr];
+    h = psr[p].param[param].err[arr];
+    if (h==0) {
+        h=v*1e-8;
+    }
+    psr[p].param[param].val[arr] = v-h;
+    l = BTFmodel_i(psr,p,ipos,-1,arr);
+    psr[p].param[param].val[arr] = v+h;
+    r = BTFmodel_i(psr,p,ipos,-1,arr);
+    psr[p].param[param].val[arr] = v;
+
+    printf("\tnumerical:\t%g\n", (r-l)/(2*h));
+    return d;
+}
+
+
+
 
 void updateBTF(pulsar *psr,double val,double err,int pos,int arr)
 {
