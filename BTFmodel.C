@@ -195,9 +195,9 @@ double BTFmodel_i(pulsar *psr,int p,int ipos,int param,int arr)
      * dphase/dfb[i] = 2*M_PI*pow(tt0,i+1)/factorial(i+1)
      * */
       /* FIXME: how do I test this? */
-      return -2.0*M_PI*r*s*cos(wspan*(arr+1)*tt0)/(wspan*(arr+1));  
+      return 2.0*M_PI*r*s*cos(wspan*(arr+1)*tt0)/(wspan*(arr+1));  
   } else if (param==param_fbbn) {
-      return -2.0*M_PI*r*s*sin(wspan*(arr+1)*tt0)/(wspan*(arr+1));  
+      return 2.0*M_PI*r*s*sin(wspan*(arr+1)*tt0)/(wspan*(arr+1));  
   }
   return 0.0;
 }
