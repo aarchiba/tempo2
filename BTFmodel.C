@@ -47,7 +47,7 @@
  * FIXME: better to make orbital frequency vary sinusoidally
  * */
 
-double BTFmodel_i(pulsar *psr,int p,int ipos,int param,int arr)
+double BTFmodel(pulsar *psr,int p,int ipos,int param,int arr)
 {
   double torb;
   double tt0;
@@ -201,49 +201,6 @@ double BTFmodel_i(pulsar *psr,int p,int ipos,int param,int arr)
   }
   return 0.0;
 }
-double BTFmodel(pulsar *psr,int p,int ipos,int param,int arr)
-{
-    double h, v, l, r, d;
-    int report_value = 0;
-    if (param==-1) {
-        int i,j;
-        if (report_value)
-            printf("Value call\n");
-        if (report_value)
-            for (i=0;i<MAX_PARAMS;i++)
-                for (j=0;j<psr[p].param[i].aSize;j++)
-                    if (psr[p].param[i].paramSet[j]) 
-                        printf("\t%s:\t%Lg\n", 
-                                psr[p].param[i].label[j], 
-                                psr[p].param[i].val[j]);
-
-
-        v = BTFmodel_i(psr,p,ipos,param,arr);
-        if (report_value)
-            printf("returned %g\n", v);
-        return v;
-    }
-
-    d = BTFmodel_i(psr,p,ipos,param,arr);
-    printf("Deriv. of obs. %d w.r.t. %s:\t%g",
-            ipos, psr[p].param[param].label[arr], d);
-    v = psr[p].param[param].val[arr];
-    h = psr[p].param[param].err[arr];
-    if (h==0) {
-        h=v*1e-8;
-        if (v==0) 
-            h=1e-16;
-    }
-    psr[p].param[param].val[arr] = v-h;
-    l = BTFmodel_i(psr,p,ipos,-1,arr);
-    psr[p].param[param].val[arr] = v+h;
-    r = BTFmodel_i(psr,p,ipos,-1,arr);
-    psr[p].param[param].val[arr] = v;
-
-    printf("\tnumerical:\t%g\n", (r-l)/(2*h));
-    return d;
-}
-
 
 
 

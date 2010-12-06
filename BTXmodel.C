@@ -47,7 +47,7 @@
  *
  * */
 
-double BTXmodel_i(pulsar *psr,int p,int ipos,int param,int arr)
+double BTXmodel(pulsar *psr,int p,int ipos,int param,int arr)
 {
   double torb;
   double tt0;
@@ -224,29 +224,6 @@ double BTXmodel_i(pulsar *psr,int p,int ipos,int param,int arr)
       return (som*(cbe-ecc) + com*sbe*sqrt(tt))*pow(tt0,arr+2)*fac;
   }
   return 0.0;
-}
-double BTXmodel(pulsar *psr,int p,int ipos,int param,int arr)
-{
-    double h, v, l, r, d;
-    if (param==-1) return BTXmodel_i(psr,p,ipos,param,arr);
-
-    d = BTXmodel_i(psr,p,ipos,param,arr);
-    printf("Derivative of obs %d with respect to %s:\t%g",
-            ipos, psr[p].param[param].label[arr], d);
-    v = psr[p].param[param].val[arr];
-    h = psr[p].param[param].err[arr];
-    if (h==0) {
-        h=v*1e-8;
-        if (v==0) h=1e-30;
-    }
-    psr[p].param[param].val[arr] = v-h;
-    l = BTXmodel_i(psr,p,ipos,-1,arr);
-    psr[p].param[param].val[arr] = v+h;
-    r = BTXmodel_i(psr,p,ipos,-1,arr);
-    psr[p].param[param].val[arr] = v;
-
-    printf("\tnumerical:\t%g\n", (r-l)/(2*h));
-    return d;
 }
 
 void updateBTX(pulsar *psr,double val,double err,int pos,int arr)
