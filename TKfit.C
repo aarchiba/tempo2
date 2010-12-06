@@ -152,7 +152,7 @@ void TKleastSquares_svd_psr(double *x,double *y,double *sig,int n,double *p,doub
       parameterScale[j] = 0;
       for (i=0;i<n;i++) 
           parameterScale[j]+=designMatrix[i][j]*designMatrix[i][j];
-      parameterScale[j] = 1/sqrt(parameter_scale[j]);
+      parameterScale[j] = 1/sqrt(parameterScale[j]);
       for (i=0;i<n;i++) 
           designMatrix[i][j]*=parameterScale[j];
     }
