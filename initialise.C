@@ -381,17 +381,17 @@ void initialiseOne (pulsar *psr, int noWarnings, int fullSetup)
   for (k=0;k<psr->param[param_fban].aSize;k++)
     {
         // first derivative is param_a1dot -AMA
-	sprintf(temp,"FBA%d (Hz)",k+2,k+2);
+	sprintf(temp,"FBA%d (Hz)",k+1);
 	strcpy(psr->param[param_fban].label[k],temp);
-	sprintf(temp,"FBA%d",k);
+	sprintf(temp,"FBA%d",k+1);
 	strcpy(psr->param[param_fban].shortlabel[k],temp);
     }
   for (k=0;k<psr->param[param_fbbn].aSize;k++)
     {
         // first derivative is param_a1dot -AMA
-	sprintf(temp,"FBB%d (Hz)",k+2,k+2);
+	sprintf(temp,"FBB%d (Hz)",k+1);
 	strcpy(psr->param[param_fbbn].label[k],temp);
-	sprintf(temp,"FBB%d",k);
+	sprintf(temp,"FBB%d",k+1);
 	strcpy(psr->param[param_fbbn].shortlabel[k],temp);
     }
 
