@@ -68,7 +68,7 @@ double BTFmodel_i(pulsar *psr,int p,int ipos,int param,int arr)
   double alpha,beta,sbe,cbe,q,r,s;
 
   int i;
-  double w;
+  double wspan;
 
   /* FIXME: PB must be set or else tempo2 doesn't believe it's a binary */
   tt0 = (psr[p].obsn[ipos].bbat - psr[p].param[param_t0].val[0])*SECDAY;
@@ -103,14 +103,19 @@ double BTFmodel_i(pulsar *psr,int p,int ipos,int param,int arr)
   /* FIXME: use longdoubles in these calculations? */
   orbits = tt0/pb - pbdot/(pb*pb)*tt0*tt0/2.;
   if (psr[p].param[param_btfspan].paramSet[0]) {
-      w = 2*M_PI/(SECDAY*psr[p].param[param_btfspan].val[0]);
+      wspan = 2*M_PI/(SECDAY*psr[p].param[param_btfspan].val[0]);
       for (i=1;i<=MAX_BTF_TERMS;i++) {
-          orbits += psr[p].param[param_fban].val[i-1]*cos(w*i*tt0)/(w*i);
-          orbits += psr[p].param[param_fbbn].val[i-1]*sin(w*i*tt0)/(w*i);
+          double a, b;
+          a = psr[p].param[param_fban].val[i-1]*cos(wspan*i*tt0)/(wspan*i);
+          b = psr[p].param[param_fbbn].val[i-1]*sin(wspan*i*tt0)/(wspan*i);
+          if(0 && psr[p].param[param_fban].paramSet[i-1])
+              printf("FBA%d adjustment: %g\tFBB%d adjustment: %g\n",
+                      i,a,i,b);
+          orbits += a+b;
       }
   } else {
-      printf("Error: BTFSPAN not set, disabling Fourier terms\n");
-      w = 1;
+      printf("Error: BTFSPAN not set; model cannot work\n");
+      exit(2);
   }
   norbits = (int)orbits;
   if (orbits < 0.0) norbits--;
@@ -190,38 +195,44 @@ double BTFmodel_i(pulsar *psr,int p,int ipos,int param,int arr)
      * dphase/dfb[i] = 2*M_PI*pow(tt0,i+1)/factorial(i+1)
      * */
       /* FIXME: how do I test this? */
-      return -2.0*M_PI*r*s*cos(w*(arr+1)*tt0)/(w*(arr+1));  
+      return -2.0*M_PI*r*s*cos(wspan*(arr+1)*tt0)/(wspan*(arr+1));  
   } else if (param==param_fbbn) {
-      return -2.0*M_PI*r*s*sin(w*(arr+1)*tt0)/(w*(arr+1));  
+      return -2.0*M_PI*r*s*sin(wspan*(arr+1)*tt0)/(wspan*(arr+1));  
   }
   return 0.0;
 }
 double BTFmodel(pulsar *psr,int p,int ipos,int param,int arr)
 {
     double h, v, l, r, d;
-    printf("Value call\n");
+    int report_value = 0;
     if (param==-1) {
         int i,j;
-        for (i=0;i<MAX_PARAMS;i++)
-            for (j=0;j<psr->param[i].aSize;j++)
-                if (psr->param[i].paramSet[j]) 
-                    printf("\t%s:\t%Lg\n", 
-                            psr->param[i].label[j], 
-                            psr->param[i].val[j]);
+        if (report_value)
+            printf("Value call\n");
+        if (report_value)
+            for (i=0;i<MAX_PARAMS;i++)
+                for (j=0;j<psr[p].param[i].aSize;j++)
+                    if (psr[p].param[i].paramSet[j]) 
+                        printf("\t%s:\t%Lg\n", 
+                                psr[p].param[i].label[j], 
+                                psr[p].param[i].val[j]);
 
 
         v = BTFmodel_i(psr,p,ipos,param,arr);
-        printf("returned %g\n", v);
+        if (report_value)
+            printf("returned %g\n", v);
         return v;
     }
 
     d = BTFmodel_i(psr,p,ipos,param,arr);
-    printf("Derivative of obs %d with respect to %s:\t%g",
+    printf("Deriv. of obs. %d w.r.t. %s:\t%g",
             ipos, psr[p].param[param].label[arr], d);
     v = psr[p].param[param].val[arr];
     h = psr[p].param[param].err[arr];
     if (h==0) {
         h=v*1e-8;
+        if (v==0) 
+            h=1e-16;
     }
     psr[p].param[param].val[arr] = v-h;
     l = BTFmodel_i(psr,p,ipos,-1,arr);

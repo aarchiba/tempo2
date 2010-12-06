@@ -237,6 +237,7 @@ double BTXmodel(pulsar *psr,int p,int ipos,int param,int arr)
     h = psr[p].param[param].err[arr];
     if (h==0) {
         h=v*1e-8;
+        if (v==0) h=1e-16;
     }
     psr[p].param[param].val[arr] = v-h;
     l = BTXmodel_i(psr,p,ipos,-1,arr);
