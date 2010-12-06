@@ -102,10 +102,15 @@ double BTFmodel_i(pulsar *psr,int p,int ipos,int param,int arr)
   torb = 0.0;
   /* FIXME: use longdoubles in these calculations? */
   orbits = tt0/pb - pbdot/(pb*pb)*tt0*tt0/2.;
-  w = 2*M_PI/(SECDAY*psr[p].param[param_btfspan].val[0]);
-  for (i=1;i<=MAX_BTF_TERMS;i++) {
-      orbits += psr[p].param[param_fban].val[i-1]*cos(w*i*tt0)/(w*i);
-      orbits += psr[p].param[param_fbbn].val[i-1]*sin(w*i*tt0)/(w*i);
+  if (psr[p].param[param_btfspan].paramSet[0]) {
+      w = 2*M_PI/(SECDAY*psr[p].param[param_btfspan].val[0]);
+      for (i=1;i<=MAX_BTF_TERMS;i++) {
+          orbits += psr[p].param[param_fban].val[i-1]*cos(w*i*tt0)/(w*i);
+          orbits += psr[p].param[param_fbbn].val[i-1]*sin(w*i*tt0)/(w*i);
+      }
+  } else {
+      printf("Error: BTFSPAN not set, disabling Fourier terms\n");
+      w = 1;
   }
   norbits = (int)orbits;
   if (orbits < 0.0) norbits--;
@@ -194,17 +199,16 @@ double BTFmodel_i(pulsar *psr,int p,int ipos,int param,int arr)
 double BTFmodel(pulsar *psr,int p,int ipos,int param,int arr)
 {
     double h, v, l, r, d;
+    printf("Value call\n");
     if (param==-1) {
         int i,j;
         for (i=0;i<MAX_PARAMS;i++)
-            for (j=0;j<psr->param[i].aSize;j++) {
+            for (j=0;j<psr->param[i].aSize;j++)
                 if (psr->param[i].paramSet[j]) 
                     printf("\t%s:\t%Lg\n", 
                             psr->param[i].label[j], 
                             psr->param[i].val[j]);
-            }
 
-        printf("Value call\n");
 
         v = BTFmodel_i(psr,p,ipos,param,arr);
         printf("returned %g\n", v);
