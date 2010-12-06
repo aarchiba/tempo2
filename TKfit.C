@@ -97,7 +97,7 @@ void TKleastSquares_svd_psr(double *x,double *y,double *sig,int n,double *p,doub
   double **designMatrix; //[n][nf];
   double basisFunc[nf],b[n];
   double **v,**u;
-  double w[nf],wt[nf],sum,wmax;
+  double w[nf],wt[nf],sum,wmax,wmin;
   int    i,j,k;
   double *parameterScale;
 
@@ -159,11 +159,15 @@ void TKleastSquares_svd_psr(double *x,double *y,double *sig,int n,double *p,doub
   TKsingularValueDecomposition_lsq(designMatrix,n,nf,v,w,u);
   //  printf("Weights\n");
   wmax = TKfindMax_d(w,nf);
+  wmin = wmax;
   for (i=0;i<nf;i++)
     {
+      if (w[i] < wmin) wmin=w[i];
       if (w[i] < tol*wmax) w[i]=0.0;
     }
-  //  printf("Back substitution\n");
+  if (wmin<tol*wmax)
+      printf("Warning: ill-conditioned fit (condition number %g)\n", wmin/wmax);
+
   /* Back substitution */
   TKbacksubstitution_svd(v, w, designMatrix, b, p, n, nf);
   // correct fitted parameters for rescaling
