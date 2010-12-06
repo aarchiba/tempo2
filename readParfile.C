@@ -1030,7 +1030,7 @@ void checkLine(pulsar *psr,char *str,FILE *fin,parameter *elong, parameter *elat
     }
   /* BTF */
   else if (strcasecmp(str,"BTFSPAN")==0)
-    readValue(psr,str,fin,&(psr->param[param_btfspan]),4);
+    readValue(psr,str,fin,&(psr->param[param_btfspan]),0);
   else if (sscanf(str,"FBA%d",&fval)==1 || sscanf(str,"fba%d",&fval)==1) /* Read higher binary frequency derivatives */
     {
       if (sscanf(str+3,"%d",&fval)==1)
