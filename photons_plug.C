@@ -31,13 +31,34 @@ longdouble tdb2tcb(longdouble mjd) {
 int find_event_hdu(fitsfile*ft_in) {
     int event_hdu;
     int status = 0;
-    if (fits_movnam_hdu(ft_in, ANY_HDU, (char*)"EVENTS", 0, &status)) {
-        fits_report_error(stderr, status);
-        fprintf(stderr, "Unable to find HDU called 'EVENTS'; try using -hdu to specify the number\n");
-        exit(13);
+    if (!fits_movnam_hdu(ft_in, ANY_HDU, (char*)"EVENTS", 0, &status)) {
+        fits_get_hdu_num(ft_in, &event_hdu);
+        return event_hdu;
+    } 
+    status=0;
+    if (!fits_movnam_hdu(ft_in, ANY_HDU, (char*)"XTE_SE", 0, &status)) {
+        fits_get_hdu_num(ft_in, &event_hdu);
+        return event_hdu;
     }
-    fits_get_hdu_num(ft_in, &event_hdu);
-    return event_hdu;
+    fits_report_error(stderr, status);
+    fprintf(stderr, "Unable to find HDU called 'EVENTS'; try using -hdu to specify the number\n");
+    fprintf(stderr, "Available HDUs are:\n");
+    status=0;
+    fits_movabs_hdu(ft_in, 1, 0, &status);
+    event_hdu=1;
+    do {
+        char hduname[81];
+        status=0;
+        if(fits_read_key(ft_in, TSTRING, "HDUNAME", hduname, 0, &status)) {
+            status=0;
+            if(fits_read_key(ft_in, TSTRING, "EXTNAME", hduname, 0, &status)) {
+                strcpy(hduname,"?");
+            }
+        }
+        fprintf(stderr, "\t%d:\t%s\n", event_hdu++, hduname);
+        status=0;
+    } while(!fits_movrel_hdu(ft_in, 1, 0, &status));
+    exit(13);
 }
 longdouble get_mjdref(fitsfile*ft_in) {
     int status = 0;
@@ -127,8 +148,8 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
     printf("Author:              Anne Archibald\n");
     printf("                     based on the fermi plugin v5.2\n");
     printf("                     by Lucas Guillemot\n");
-    printf("Updated:             30 November 2010\n");
-    printf("Version:             0.3\n");
+    printf("Updated:             6 December 2010\n");
+    printf("Version:             0.4\n");
     printf("------------------------------------------\n");
     printf("\n");
 
