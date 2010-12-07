@@ -280,9 +280,7 @@ void tzFit(pulsar *psr,int npsr,longdouble *tmin,double *doppler,double *rms,dou
   struct tm *timePtr;
   time_t tm;
 
-  //  fout = fopen("polyco_new.dat","w");
-  //  fout2 = fopen("newpolyco.dat","w");
-
+  // This gets called multiple times, so we append each day's block
   fout = fopen("polyco_new.dat","a");
   fout2 = fopen("newpolyco.dat","a");
 
