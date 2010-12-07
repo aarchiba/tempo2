@@ -129,7 +129,7 @@ int readSimpleParfile (FILE *fin, pulsar *p)
 
 void checkLine(pulsar *psr,char *str,FILE *fin,parameter *elong, parameter *elat)
 {
-  int gval;
+  int gval, fval;
   if (str[0]=='#') /* Comment line */
     fgets(str,1000,fin);
   else if (strcasecmp(str,"PSR")==0 || strcasecmp(str,"PSRB")==0 || strcasecmp(str,"PSRJ")==0) /* Name of pulsar */
@@ -416,9 +416,8 @@ void checkLine(pulsar *psr,char *str,FILE *fin,parameter *elong, parameter *elat
     readValue(psr,str,fin,&(psr->param[param_f]),1);
   else if (strcasecmp(str,"F0")==0 || strcasecmp(str,"F")==0)      /* F0 */
     readValue(psr,str,fin,&(psr->param[param_f]),0);
-  else if (str[0]=='F' || str[0]=='f') /* Read higher frequency derivatives */
+  else if (sscanf(str,"F%d",&fval)==1 || sscanf(str,"f%d",&fval)==1) /* Read higher frequency derivatives */
     {
-      int fval;
       if (sscanf(str+1,"%d",&fval)==1)
 	{
 	  if (fval<psr->param[param_f].aSize)
@@ -621,8 +620,7 @@ void checkLine(pulsar *psr,char *str,FILE *fin,parameter *elong, parameter *elat
       readValue(psr,str,fin,&(psr->param[param_pb]),0);
       if (psr->nCompanion==0) psr->nCompanion=1;
     }
-  else if ((strcasecmp(str,"PBDOT")!=0) && (str[0]=='P' || str[0]=='p') &&  /* Higher Pb derivatives */
-	   (str[1]=='B' || str[1]=='b'))
+  else if (sscanf(str,"PB%d",&fval)==1 || sscanf(str,"pb%d",&fval)==1)
     {
       int pbval;
       if (sscanf(str+3,"%d",&pbval)==1)
@@ -764,6 +762,75 @@ void checkLine(pulsar *psr,char *str,FILE *fin,parameter *elong, parameter *elat
     readValue(psr,str,fin,&(psr->param[param_bpjpb]),3);
   else if (strcasecmp(str,"BPJPB_5")==0)
     readValue(psr,str,fin,&(psr->param[param_bpjpb]),4);
+  /* BTX */
+  else if (sscanf(str,"FB%d",&fval)==1 || sscanf(str,"fb%d",&fval)==1) /* Read higher binary frequency derivatives */
+    {
+      if (sscanf(str+2,"%d",&fval)==1)
+	{
+	  if (fval<psr->param[param_fbn].aSize) {
+	    readValue(psr,str,fin,&(psr->param[param_fbn]),fval);
+            if (fval==0 && !psr->param[param_pb].paramSet[0]) {
+                /* set PB since lots of code uses it */
+                psr->param[param_pb].val[0] = (1./psr->param[param_fbn].val[0])/SECDAY;
+                psr->param[param_pb].fitFlag[0] = 0;
+                psr->param[param_pb].err[0] = 1./SECDAY*psr->param[param_fbn].err[0]/pow(psr->param[param_fbn].val[0],2);
+                psr->param[param_pb].prefit[0] = psr->param[param_pb].val[0];
+                psr->param[param_pb].paramSet[0] = 1;
+            }
+            if (psr->nCompanion==0) psr->nCompanion=1;
+          } else if (fval>=psr->param[param_fbn].aSize){
+	    printf("WARNING!!! Currently only binary period derivatives up to order %d\n", psr->param[param_fbn].aSize);
+	    printf("WARNING!!! are available. All higher derivatives will be ignored!\n");
+	  }
+	}
+    }
+  else if (sscanf(str,"XDOT%d",&fval)==1 || sscanf(str,"xdot%d",&fval)==1) /* Read higher binary frequency derivatives */
+    {
+      if (sscanf(str+4,"%d",&fval)==1)
+	{
+          if (fval==0) {
+              printf("WARNING: XDOT0 is called A1; ignoring\n");
+          } else if (fval==1) {
+              printf("WARNING: XDOT1 is called XDOT; ignoring\n");
+          } else if (fval-2<psr->param[param_xdotn].aSize) {
+	    readValue(psr,str,fin,&(psr->param[param_xdotn]),fval-2);
+          } else if (fval-2>=psr->param[param_xdotn].aSize){
+	    printf("WARNING!!! Currently only binary size derivatives up to order %d\n", psr->param[param_fbn].aSize+2);
+	    printf("WARNING!!! are available. All higher derivatives will be ignored!\n");
+	  }
+	}
+    }
+  /* BTF */
+  else if (strcasecmp(str,"BTFSPAN")==0)
+    readValue(psr,str,fin,&(psr->param[param_btfspan]),0);
+  else if (sscanf(str,"FBA%d",&fval)==1 || sscanf(str,"fba%d",&fval)==1) /* Read higher binary frequency derivatives */
+    {
+      if (sscanf(str+3,"%d",&fval)==1)
+	{
+          if (fval==0) {
+            printf("WARNING!! FBA0 undefined, will be ignored\n");
+          } else if (fval<psr->param[param_fban].aSize) {
+	    readValue(psr,str,fin,&(psr->param[param_fban]),fval-1);
+          } else if (fval>=psr->param[param_fban].aSize){
+	    printf("WARNING!!! Currently only binary modulation terms up to order %d\n", psr->param[param_fban].aSize);
+	    printf("WARNING!!! are available. All higher terms will be ignored!\n");
+	  }
+	}
+    }
+  else if (sscanf(str,"FBB%d",&fval)==1 || sscanf(str,"fbb%d",&fval)==1) /* Read higher binary frequency derivatives */
+    {
+      if (sscanf(str+3,"%d",&fval)==1)
+	{
+          if (fval==0) {
+            printf("WARNING!! FBB0 undefined, will be ignored\n");
+          } else if (fval<psr->param[param_fbbn].aSize) {
+	    readValue(psr,str,fin,&(psr->param[param_fbbn]),fval-1);
+          } else if (fval>=psr->param[param_fbbn].aSize){
+	    printf("WARNING!!! Currently only binary modulation terms up to order %d\n", psr->param[param_fbbn].aSize);
+	    printf("WARNING!!! are available. All higher terms will be ignored!\n");
+	  }
+	}
+    }
   else if (strcasecmp(str,"NTOA")==0)
     {
       char str[1000];

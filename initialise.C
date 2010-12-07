@@ -331,6 +331,8 @@ void initialiseOne (pulsar *psr, int noWarnings, int fullSetup)
   strcpy(psr->param[param_tzrfrq].shortlabel[0],"TZRFRQ");
   strcpy(psr->param[param_tspan].label[0],"TSPAN (min)"); 
   strcpy(psr->param[param_tspan].shortlabel[0],"TSPAN");
+  strcpy(psr->param[param_btfspan].label[0],"BTFSPAN (days)");
+  strcpy(psr->param[param_btfspan].shortlabel[0],"BTFSPAN");
 
   for (k=0;k<psr->param[param_bpjep].aSize;k++)
     {
@@ -360,6 +362,38 @@ void initialiseOne (pulsar *psr, int noWarnings, int fullSetup)
 
 
     }       
+  for (k=0;k<psr->param[param_fbn].aSize;k++)
+    {
+        // Binary frequency is always written FB0 -AMA
+	sprintf(temp,"FB%d (s^-%d)",k,k+1);
+	strcpy(psr->param[param_fbn].label[k],temp);
+	sprintf(temp,"FB%d",k);
+	strcpy(psr->param[param_fbn].shortlabel[k],temp);
+    }
+  for (k=0;k<psr->param[param_xdotn].aSize;k++)
+    {
+        // first derivative is param_a1dot -AMA
+	sprintf(temp,"XDOT%d (lt-s s^-%d)",k+2,k+2);
+	strcpy(psr->param[param_xdotn].label[k],temp);
+	sprintf(temp,"XDOT%d",k);
+	strcpy(psr->param[param_xdotn].shortlabel[k],temp);
+    }
+  for (k=0;k<psr->param[param_fban].aSize;k++)
+    {
+        // first derivative is param_a1dot -AMA
+	sprintf(temp,"FBA%d (Hz)",k+1);
+	strcpy(psr->param[param_fban].label[k],temp);
+	sprintf(temp,"FBA%d",k+1);
+	strcpy(psr->param[param_fban].shortlabel[k],temp);
+    }
+  for (k=0;k<psr->param[param_fbbn].aSize;k++)
+    {
+        // first derivative is param_a1dot -AMA
+	sprintf(temp,"FBB%d (Hz)",k+1);
+	strcpy(psr->param[param_fbbn].label[k],temp);
+	sprintf(temp,"FBB%d",k+1);
+	strcpy(psr->param[param_fbbn].shortlabel[k],temp);
+    }
 
   strcpy(psr->param[param_wave_om].label[0],"WAVE_OM"); strcpy(psr->param[param_wave_om].shortlabel[0],"WAVE_OM");
   strcpy(psr->param[param_dmval].label[0],"DMVAL"); strcpy(psr->param[param_dmval].shortlabel[0],"DMVAL");
@@ -405,6 +439,10 @@ void allocateMemory(pulsar *psr, int realloc)
 	psr->param[i].aSize = 9;
       else if (i==param_dmx || i==param_dmxr1 || i==param_dmxr2)
         psr->param[i].aSize = MAX_DMX;
+      else if (i==param_fbn || i==param_xdotn)
+        psr->param[i].aSize = MAX_BTX_DERIVS;
+      else if (i==param_fban || i==param_fbbn)
+        psr->param[i].aSize = MAX_BTF_TERMS;
       else psr->param[i].aSize = 1;
       
       psr->param[i].val       = (longdouble *)malloc(psr->param[i].aSize*sizeof(longdouble));
@@ -419,7 +457,9 @@ void allocateMemory(pulsar *psr, int realloc)
       for (j=0;j<psr->param[i].aSize;j++)
 	{
 	  psr->param[i].label[j] = (char *)malloc(sizeof(char)*100);
+	  psr->param[i].label[j][0] = (char)0;
 	  psr->param[i].shortlabel[j] = (char *)malloc(sizeof(char)*100);
+	  psr->param[i].shortlabel[j][0] = (char)0;
 
 	  psr->param[i].fitFlag[j]  = 0;
 	  psr->param[i].paramSet[j] = 0;

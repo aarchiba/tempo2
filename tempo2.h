@@ -29,7 +29,7 @@
 #define TSUN (4.925490947e-6L) // Solar constant for mass calculations.
 #define MAX_FREQ_DERIVATIVES 13    /* F0 -> Fn   where n=10                            */
 #define MAX_DM_DERIVATIVES   10    /* DM0 -> DMn where n=10                            */
-#define MAX_PSR_VAL          23    /* Maximum number of pulsars                        */             
+#define MAX_PSR_VAL          1    /* Maximum number of pulsars                        */             
 #define MAX_COMPANIONS       4     /* Maximum number of binary companions              */
 #define NE_SW_DEFAULT        4     /* Default value for electron density (cm-3) at 1AU due to solar wind */
 #define ECLIPTIC_OBLIQUITY_VAL 84381.4059 /* mean obliquity of ecliptic in arcsec        */
@@ -46,6 +46,8 @@
 #define MAX_WHITE            100   /* Maximum number of parameters for whitening       */
 #define MAX_IFUNC            100   /* Maximum number of parameters for interpolation function  */
 #define MAX_BPJ_JUMPS        5     /* Maximum number of jumps in binary params - for BPJ model */
+#define MAX_BTX_DERIVS       12     /* Maximum number of derivatives in binary params - for BTX model */
+#define MAX_BTF_TERMS        20     /* Maximum number of sinusoids in binary params - for BTF model */
 #define MAX_TOFFSET          10    /* Number of time jumps allowed in .par file        */
 #define MAX_DMX              64    /* Max number of DM steps allowed */
 #define MAX_FLAGS            50    /* Maximum number of flags in .tim file/observation */
@@ -155,7 +157,9 @@ enum label {param_raj,param_decj,param_f,param_pepoch,param_posepoch,
             param_wave_om,param_kom,param_kin,param_shapmax,param_dth,param_a0,
 	    param_b0,param_xomdot,param_afac,param_eps1dot,param_eps2dot,param_tres,
             param_dshk,param_ephver,param_daop,param_iperharm,param_dmassplanet,param_waveepoch,param_ifunc,
-            param_dmx,param_dmxr1,param_dmxr2,param_dmval};
+            param_dmx,param_dmxr1,param_dmxr2,param_dmval,
+            param_fbn, param_xdotn, 
+            param_fban, param_fbbn, param_btfspan};
 
 extern int MAX_PSR;
 extern int MAX_OBSN;
@@ -460,6 +464,10 @@ double MSSmodel(pulsar *psr,int p,int obs,int param);
 void updateMSS(pulsar *psr,double val,double err,int pos);
 double BTmodel(pulsar *psr,int p,int obs,int param);
 void updateBT(pulsar *psr,double val,double err,int pos);
+double BTXmodel(pulsar *psr,int p,int obs,int param,int arr);
+void updateBTX(pulsar *psr,double val,double err,int pos,int arr);
+double BTFmodel(pulsar *psr,int p,int obs,int param,int arr);
+void updateBTF(pulsar *psr,double val,double err,int pos,int arr);
 double BTJmodel(pulsar *psr,int p,int obs,int param,int arr);
 void updateBTJ(pulsar *psr,double val,double err,int pos,int arr);
 double ELL1model(pulsar *psr,int p,int obs,int param);
