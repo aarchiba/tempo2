@@ -48,7 +48,7 @@ char tempo2MachineType[MAX_FILELEN] = "";
 
 void extra_delays(pulsar *psr,int npsr)
 {  
-  const char *CVS_verNum = "$Revision: 1.12 $";
+  const char *CVS_verNum = "$Revision: 1.13 $";
   if (displayCVSversion == 1) CVSdisplayVersion("global.C","extra_delays()",CVS_verNum);
 
   calculate_bclt(psr,npsr);/* 3. Calculate bclt  */
@@ -58,7 +58,7 @@ void extra_delays(pulsar *psr,int npsr)
 
 void clock_corrections(pulsar *psr,int npsr)
 {  
-  const char *CVS_verNum = "$Revision: 1.12 $";
+  const char *CVS_verNum = "$Revision: 1.13 $";
   if (displayCVSversion == 1) CVSdisplayVersion("global.C","clock_corrections()",CVS_verNum);
 
   if (debugFlag==1) printf("Calling toa2utc\n");
@@ -74,7 +74,7 @@ void clock_corrections(pulsar *psr,int npsr)
 
 void ephemeris_routines(pulsar *psr,int npsr)
 { 
-  const char *CVS_verNum = "$Revision: 1.12 $";
+  const char *CVS_verNum = "$Revision: 1.13 $";
   if (displayCVSversion == 1) CVSdisplayVersion("global.C","ephemeris_routines()",CVS_verNum);
 
   vectorPulsar(psr,npsr);   /* 1. Form a vector pointing at the pulsar */
@@ -86,7 +86,7 @@ void ephemeris_routines(pulsar *psr,int npsr)
 
 void formBatsAll(pulsar *psr,int npsr)
 {
-  const char *CVS_verNum = "$Revision: 1.12 $";
+  const char *CVS_verNum = "$Revision: 1.13 $";
   if (displayCVSversion == 1) CVSdisplayVersion("global.C","formBatsAll()",CVS_verNum);
 
   if (debugFlag==1) printf("Calling clock corrections\n");
@@ -103,7 +103,7 @@ void formBatsAll(pulsar *psr,int npsr)
 // to change if psr position has been altered.
 void updateBatsAll(pulsar *psr, int npsr)
 {
-  const char *CVS_verNum = "$Revision: 1.12 $";
+  const char *CVS_verNum = "$Revision: 1.13 $";
   if (displayCVSversion == 1) CVSdisplayVersion("global.C","updateBatsAll()",CVS_verNum);
 
   vectorPulsar(psr, npsr);
@@ -131,7 +131,7 @@ void CVSdisplayVersion(char *file,char *func,const char *verNum)
   if (have==0)
     {
       if (counter==0) // First go display tempo2.h version
-	printf("TEMPO2 VERSION:] [tempo2.h] [] [%s]\n",TEMPO2_h_VER);
+	printf("[TEMPO2 VERSION:] [tempo2.h] [] [%s]\n",TEMPO2_h_VER);
       printf("[TEMPO2 VERSION:] [%s] [%s] [%s]\n",file,func,verNum);
       strcpy(alreadyFunc[counter],func);
       strcpy(alreadyFile[counter],file);
