@@ -520,6 +520,7 @@ void checkLine(pulsar *psr,char *str,FILE *fin,parameter *elong, parameter *elat
       int number = psr->dmoffsNum;
       fscanf(fin,"%lf %lf",&psr->dmoffsMJD[number],&psr->dmoffsDM[number]);
       psr->dmoffsOffset[number] = 0;
+      psr->dmoffsError[number] = 0;
       psr->dmoffsDMe[number] = 0;
       (psr->dmoffsNum)++;
     }
@@ -911,7 +912,7 @@ void readParfile(pulsar *psr,char parFile[][MAX_FILELEN],char timFile[][MAX_FILE
   char str[1000];
   parameter elong,elat;	
   int noread=0,endit;
-  const char *CVS_verNum = "$Revision: 1.21 $";
+  const char *CVS_verNum = "$Revision: 1.22 $";
 
   if (displayCVSversion == 1) CVSdisplayVersion("readParfile.C","readParfile()",CVS_verNum);
 

@@ -47,7 +47,7 @@ void doFit(pulsar *psr,int npsr,int writeModel)
   double *error;
   double tol = 1.0e-40;  /* Tolerence for singular value decomposition routine */
   double newStart=-1.0,newFinish=-1.0;
-  const char *CVS_verNum = "$Revision: 1.20 $";
+  const char *CVS_verNum = "$Revision: 1.21 $";
 
   if (displayCVSversion == 1) CVSdisplayVersion("doFit.C","doFit()",CVS_verNum);
   if (debugFlag==1) printf("Entering doFit\n");
@@ -537,8 +537,11 @@ void FITfuncs(double x,double afunc[],int ma,pulsar *psr,int ipos)
 			  double t1 = (double)psr->dmoffsMJD[j+1];
 			  double d0 = (double)psr->dmoffsDM[j];
 			  double d1 = (double)psr->dmoffsDM[j+1];
-			  
+			  // This is for the actual frequency-dep fit
 			  afunc[n++] = getParamDeriv(psr,ipos,x,i,j);
+			  //
+			  // This is for the non-frequency-dep. fit
+			  //
 			  if (ti >= t0 && ti < t1)
 			    afunc[n++]=1.0-(1.0/(t1-t0))*(ti-t0);
 			  else if (ti >= tm1 && ti < t0)
@@ -1163,7 +1166,8 @@ void updateParameters(pulsar *psr,int p,double *val,double *error)
 		      psr[p].dmoffsDM[k] += val[j];
 		      psr[p].dmoffsDMe[k] = error[j];
 		      j++;
-		      psr[p].dmoffsOffset[k] = error[j];
+		      psr[p].dmoffsOffset[k] = val[j];
+		      psr[p].dmoffsError[k] =  error[j];
 		      j++;
 		    }
 		  j--;

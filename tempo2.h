@@ -26,7 +26,7 @@
 
 #ifndef __Tempo2_h
 #define __Tempo2_h
-#define TEMPO2_h_VER "$Revision: 1.24 $"
+#define TEMPO2_h_VER "$Revision: 1.25 $"
 #define TSUN (4.925490947e-6L) // Solar constant for mass calculations.
 #define MAX_FREQ_DERIVATIVES 13    /* F0 -> Fn   where n=10                            */
 #define MAX_DM_DERIVATIVES   10    /* DM0 -> DMn where n=10                            */
@@ -286,7 +286,8 @@ typedef struct pulsar {
   double dmoffsDM[100];
   double dmoffsDMe[100];
   double dmoffsOffset[100];
-  
+  double dmoffsError[100];
+
   // Gravitational wave information
   double gwsrc_ra;
   double gwsrc_dec;
