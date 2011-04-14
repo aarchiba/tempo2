@@ -47,7 +47,7 @@ void doFit(pulsar *psr,int npsr,int writeModel)
   double *error;
   double tol = 1.0e-40;  /* Tolerence for singular value decomposition routine */
   double newStart=-1.0,newFinish=-1.0;
-  const char *CVS_verNum = "$Revision: 1.21 $";
+  const char *CVS_verNum = "$Revision: 1.22 $";
 
   if (displayCVSversion == 1) CVSdisplayVersion("doFit.C","doFit()",CVS_verNum);
   if (debugFlag==1) printf("Entering doFit\n");
@@ -529,25 +529,13 @@ void FITfuncs(double x,double afunc[],int ma,pulsar *psr,int ipos)
 		    }
 		  else if (i==param_dmmodel)
 		    {		      
+		    double dmf = 1.0/(DM_CONST*powl(psr->obsn[ipos].freqSSB/1.0e6,2));
+
 		      for (j=1;j<(int)psr->dmoffsNum;j++)
 			{
-			  double ti = (double)psr->obsn[ipos].sat;
-			  double tm1 = (double)psr->dmoffsMJD[j-1];
-			  double t0 = (double)psr->dmoffsMJD[j];
-			  double t1 = (double)psr->dmoffsMJD[j+1];
-			  double d0 = (double)psr->dmoffsDM[j];
-			  double d1 = (double)psr->dmoffsDM[j+1];
 			  // This is for the actual frequency-dep fit
+			  afunc[n++] = dmf*getParamDeriv(psr,ipos,x,i,j);
 			  afunc[n++] = getParamDeriv(psr,ipos,x,i,j);
-			  //
-			  // This is for the non-frequency-dep. fit
-			  //
-			  if (ti >= t0 && ti < t1)
-			    afunc[n++]=1.0-(1.0/(t1-t0))*(ti-t0);
-			  else if (ti >= tm1 && ti < t0)
-			    afunc[n++]=(1.0/(t0-tm1))*(ti-tm1);
-			  else
-			    afunc[n++] = 0;
 			}
 		    }
 		  else
@@ -955,17 +943,13 @@ double getParamDeriv(pulsar *psr,int ipos,double x,int i,int k)
       double tm1 = (double)psr->dmoffsMJD[k-1];
       double t0 = (double)psr->dmoffsMJD[k];
       double t1 = (double)psr->dmoffsMJD[k+1];
-      double d0 = (double)psr->dmoffsDM[k];
-      double d1 = (double)psr->dmoffsDM[k+1];
       if (ti >= t0 && ti < t1)
 	{
-	  afunc = 1.0/(DM_CONST*powl(psr->obsn[ipos].freqSSB/1.0e6,2));      
-	  afunc*=1.0-(1.0/(t1-t0))*(ti-t0);
+	  afunc=1.0-(1.0/(t1-t0))*(ti-t0);
 	}
       else if (ti >= tm1 && ti < t0)
 	{
-	  afunc = 1.0/(DM_CONST*powl(psr->obsn[ipos].freqSSB/1.0e6,2));      
-	  afunc*=(1.0/(t0-tm1))*(ti-tm1);
+	  afunc=(1.0/(t0-tm1))*(ti-tm1);
 	}
       else
 	afunc = 0;
