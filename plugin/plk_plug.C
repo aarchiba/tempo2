@@ -245,7 +245,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
   //display chisq?
   int showChisq = 0;
   char flagColour[100];
-  const char *CVS_verNum = "$Revision: 1.36 $";
+  const char *CVS_verNum = "$Revision: 1.37 $";
 
   if (displayCVSversion == 1) CVSdisplayVersion("plk_plug.C","plugin",CVS_verNum);
 
@@ -258,7 +258,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
   printf("Graphical Interface: plk emulator\n");
   printf("Authors:             George Hobbs, J. Verbiest (v4. 3 Aug 2007)\n");
-  printf("CVS Version:         $Revision: 1.36 $\n");
+  printf("CVS Version:         $Revision: 1.37 $\n");
   printf(" --- type 'h' for help information\n");
   /* Obtain the .par and the .tim file from the command line */
 
@@ -814,7 +814,7 @@ void doPlot(pulsar *psr,int npsr,char *gr,double unitFlag, char parFile[][MAX_FI
           //cpgbox("BCNST1",0.0,0,"BCNST1",0.0,0);
         }
       // Print period axis (right-hand y-axis)
-      if( yplot == 1 || yplot == 2 ){
+      if( publish==0 && (yplot == 1 || yplot == 2 )){
         cpgbox( "BCNST", 0.0, 0, "BNST1", 0.0, 0 );
         cpgaxis( "N", plotx2, ploty1, plotx2, ploty2,
                  ploty1*psr[0].param[param_f].val[0]*unitFlag,
@@ -829,7 +829,7 @@ void doPlot(pulsar *psr,int npsr,char *gr,double unitFlag, char parFile[][MAX_FI
 	  cpgenv(plotx1,plotx2,ploty1,ploty2,0,-1);
     //cpgbox("BCNST1",0.0,0,"BCNST1",0.0,0);
     // Print period axis (right-hand y-axis )
-    if( yplot == 1 || yplot == 2 ){
+    if(publish==0 &&( yplot == 1 || yplot == 2 )){
       cpgbox( "BCNST1", 0.0, 0, "BNST1", 0.0, 0 );
         cpgaxis( "N", plotx2, ploty1, plotx2, ploty2,
                  ploty1*psr[0].param[param_f].val[0]*unitFlag,
