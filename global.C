@@ -28,6 +28,7 @@
 */
 
 #include <stdio.h>
+#include <string.h>
 #include "tempo2.h"
 //#include "tempo2Util.h"
 //#include "tempo2pred.h"
@@ -48,7 +49,7 @@ char tempo2MachineType[MAX_FILELEN] = "";
 
 void extra_delays(pulsar *psr,int npsr)
 {  
-  const char *CVS_verNum = "$Revision: 1.14 $";
+  const char *CVS_verNum = "$Revision: 1.15 $";
   if (displayCVSversion == 1) CVSdisplayVersion("global.C","extra_delays()",CVS_verNum);
 
   calculate_bclt(psr,npsr);/* 3. Calculate bclt  */
@@ -58,7 +59,7 @@ void extra_delays(pulsar *psr,int npsr)
 
 void clock_corrections(pulsar *psr,int npsr)
 {  
-  const char *CVS_verNum = "$Revision: 1.14 $";
+  const char *CVS_verNum = "$Revision: 1.15 $";
   if (displayCVSversion == 1) CVSdisplayVersion("global.C","clock_corrections()",CVS_verNum);
 
   if (debugFlag==1) printf("Calling toa2utc\n");
@@ -74,7 +75,7 @@ void clock_corrections(pulsar *psr,int npsr)
 
 void ephemeris_routines(pulsar *psr,int npsr)
 { 
-  const char *CVS_verNum = "$Revision: 1.14 $";
+  const char *CVS_verNum = "$Revision: 1.15 $";
   if (displayCVSversion == 1) CVSdisplayVersion("global.C","ephemeris_routines()",CVS_verNum);
 
   vectorPulsar(psr,npsr);   /* 1. Form a vector pointing at the pulsar */
@@ -86,7 +87,7 @@ void ephemeris_routines(pulsar *psr,int npsr)
 
 void formBatsAll(pulsar *psr,int npsr)
 {
-  const char *CVS_verNum = "$Revision: 1.14 $";
+  const char *CVS_verNum = "$Revision: 1.15 $";
   if (displayCVSversion == 1) CVSdisplayVersion("global.C","formBatsAll()",CVS_verNum);
 
   if (debugFlag==1) printf("Calling clock corrections\n");
@@ -103,7 +104,7 @@ void formBatsAll(pulsar *psr,int npsr)
 // to change if psr position has been altered.
 void updateBatsAll(pulsar *psr, int npsr)
 {
-  const char *CVS_verNum = "$Revision: 1.14 $";
+  const char *CVS_verNum = "$Revision: 1.15 $";
   if (displayCVSversion == 1) CVSdisplayVersion("global.C","updateBatsAll()",CVS_verNum);
 
   vectorPulsar(psr, npsr);
