@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
   FILE *alias;
   char **commandLine;
   clock_t startClock,endClock;
-  const char *CVS_verNum = "$Revision: 1.13 $";
+  const char *CVS_verNum = "$Revision: 1.14 $";
 
   char plug_path[32][MAX_STRLEN];
   int plug_path_len=0;
@@ -292,7 +292,7 @@ int main(int argc, char *argv[])
 	  }
 	  if(!module)  {
 	    fprintf(stderr, "[error]: dlopen() failed while resolving symbols.\n" );
-	    fprintf(stderr, "dlerror() = %s\n",dlerror());
+//	    fprintf(stderr, "dlerror() = %s\n",dlerror());
 	    return -1;
 	  }
 	  entry = (char*(*)(int,char **,pulsar *,int *))dlsym(module, "graphicalInterface");
