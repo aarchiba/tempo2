@@ -42,7 +42,7 @@ void dm_delays(pulsar *psr,int npsr,int p,int i,double delt,double dt_SSB)
   double rsa[3],pos[3],vobs[3],yrs;
   double dmDot;
   int j,k;
-  const char *CVS_verNum = "$Revision: 1.13 $";
+  const char *CVS_verNum = "$Revision: 1.14 $";
 
   if (displayCVSversion == 1) CVSdisplayVersion("dm_delays.C","dm_delays()",CVS_verNum);
   if (debugFlag==1) printf("In dm_delays with pulsar %d; number of obs = %d\n",p,psr[p].nobs);
@@ -205,7 +205,6 @@ void dm_delays(pulsar *psr,int npsr,int p,int i,double delt,double dt_SSB)
 	 2.0e14*acos(ctheta)/r/sqrt(1.0-ctheta*ctheta)/2.0)/freqf/freqf; */
       /* printf("Dispersion delay = %g\n",(double)(psr[p].obsn[i].tdis1+psr[p].obsn[i].tdis2));  */
 
-	if(i==0)	fprintf(stderr,"DM VVV SAT=%lf\t%lf\n",(double)psr[p].obsn[i].sat,(double)dmval);
     }
   if (debugFlag==1) 
       printf("Exiting dm_delays with pulsar %d; number of obs = %d\n",p,psr[p].nobs);
