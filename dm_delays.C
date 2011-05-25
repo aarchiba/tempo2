@@ -42,7 +42,7 @@ void dm_delays(pulsar *psr,int npsr,int p,int i,double delt,double dt_SSB)
   double rsa[3],pos[3],vobs[3],yrs;
   double dmDot;
   int j,k;
-  const char *CVS_verNum = "$Revision: 1.14 $";
+  const char *CVS_verNum = "$Revision: 1.15 $";
 
   if (displayCVSversion == 1) CVSdisplayVersion("dm_delays.C","dm_delays()",CVS_verNum);
   if (debugFlag==1) printf("In dm_delays with pulsar %d; number of obs = %d\n",p,psr[p].nobs);
@@ -140,7 +140,6 @@ void dm_delays(pulsar *psr,int npsr,int p,int i,double delt,double dt_SSB)
 		    }
 		}
 	    }
-		if(i==0)  fprintf(stderr,"DM ERR SAT=%lf\t%lf\n",(double)psr[p].obsn[i].sat,(double)dmval);
 	}
       else
 	{
