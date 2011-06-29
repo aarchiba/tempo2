@@ -69,7 +69,7 @@ void preProcess(pulsar *psr,int npsr,int argc,char *argv[])
   int trimonly = 0;
   char modifyFname[100];
   double simulate=0;
-  const char *CVS_verNum = "$Revision: 1.22 $";
+  const char *CVS_verNum = "$Revision: 1.23 $";
 
   if (displayCVSversion == 1) CVSdisplayVersion("preProcess.C","preProcess()",CVS_verNum);
   
@@ -322,7 +322,7 @@ void preProcess(pulsar *psr,int npsr,int argc,char *argv[])
 	      char retstr[1000];
 	      psr[p].param[param_decj].val[0] = psr[p].param[param_decj].val[0]+psr[p].param[param_pmdec].val[0]/1000.0*(M_PI/180.0)/60.0/60.0*dt; 
 	      psr[p].param[param_decj].prefit[0] = psr[p].param[param_decj].val[0];
-	      turn_dms(psr[p].param[param_decj].val[k]/(2.0*M_PI), retstr);
+	      turn_dms(psr[p].param[param_decj].val[0]/(2.0*M_PI), retstr);
 	      strcpy(psr[p].decjStrPost,retstr);
 	      strcpy(psr[p].decjStrPre,retstr);
 	    }
