@@ -56,7 +56,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
   double globalParameter;
   double realStatistic;
   double simStatistic;
-  const char *CVS_verNum = "$Revision: 1.2 $";
+  const char *CVS_verNum = "$Revision: 1.3 $";
   double gwAmp,gwAlpha;
   double whiteNoise;
 
@@ -83,13 +83,16 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
   
   char fname[128];
 
+  gwAmp   = 1e-15; // Default value
+  gwAlpha = -2.0/3.0; // Default value
+
   if (displayCVSversion == 1) CVSdisplayVersion("icLimit.C","plugin",CVS_verNum);
 
   *npsr = 0;  
 
   printf("Graphical Interface: icLimit\n");
   printf("Author:              R. Shannon, G. Hobbs\n");
-  printf("CVS Version:         $Revision: 1.2 $\n");
+  printf("CVS Version:         $Revision: 1.3 $\n");
   printf(" --- type 'h' for help information\n");
 
 
@@ -104,9 +107,13 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 	}
       else if (strcmp(argv[i],"-dcf")==0)
 	strcpy(covarFuncFile,argv[++i]); // Must be in order with fname_1, fname_2 etc.
+      else if (strcmp(argv[i],"-gwamp")==0)
+	sscanf(argv[++i],"%lf",&gwAmp);
+      else if (strcmp(argv[i],"-gwalpha")==0)
+	sscanf(argv[++i],"%lf",&gwAlpha);
     }
-  gwAmp   = 1e-15;
-  gwAlpha = -2.0/3.0; 
+
+
   scale = pow(86400.0*365.25,gwAlpha);
   gwAmp *= scale;
 
