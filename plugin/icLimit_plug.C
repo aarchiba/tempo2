@@ -56,7 +56,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
   double globalParameter;
   double realStatistic;
   double simStatistic;
-  const char *CVS_verNum = "$Revision: 1.3 $";
+  const char *CVS_verNum = "$Revision: 1.4 $";
   double gwAmp,gwAlpha;
   double whiteNoise;
 
@@ -92,7 +92,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
   printf("Graphical Interface: icLimit\n");
   printf("Author:              R. Shannon, G. Hobbs\n");
-  printf("CVS Version:         $Revision: 1.3 $\n");
+  printf("CVS Version:         $Revision: 1.4 $\n");
   printf(" --- type 'h' for help information\n");
 
 
@@ -240,12 +240,11 @@ double getStatPS(pulsar *psr,int npsr,double gwAmp,double gwAlpha,int it,char *c
       if (it==-1) // Using real data
 	{
 	  // Be careful if only 1 pulsar
-	  sprintf(fname,"%s_%d",covarFuncFile,p+1);
-	  //      if (npsr>1)
-	  //	{
-	  //	  sprintf(temp,"%s_%d",fname,p+1);
-	  //	  strcpy(fname,temp);
-	  //	}
+	  if (npsr>1)
+	    sprintf(fname,"%s_%d",covarFuncFile,p+1);
+	  else
+	    strcpy(fname,covarFuncFile);
+
 	  printf("Opening >%s<\n",fname);
 	  if (!(fin = fopen(fname,"r")))
 	    {
