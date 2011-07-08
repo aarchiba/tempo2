@@ -69,7 +69,7 @@ void preProcess(pulsar *psr,int npsr,int argc,char *argv[])
   int trimonly = 0;
   char modifyFname[100];
   double simulate=0;
-  const char *CVS_verNum = "$Revision: 1.23 $";
+  const char *CVS_verNum = "$Revision: 1.24 $";
 
   if (displayCVSversion == 1) CVSdisplayVersion("preProcess.C","preProcess()",CVS_verNum);
   
@@ -566,24 +566,18 @@ void preProcess(pulsar *psr,int npsr,int argc,char *argv[])
 	}
       
       preProcessSimple3 (psr + p);
-
+    
     }
 
   // Now check for global parameters
   if (strlen(globalFname) > 0)
     {
-      FILE *fin;
       char tpar[MAX_STRLEN][MAX_FILELEN];
       char ttim[MAX_STRLEN][MAX_FILELEN];
 
-      //      fin = fopen(globalFname,"r");      
+      sprintf(tpar[0],globalFname);
       printf("Setting global parameters\n");
-      strcpy(tpar[0],globalFname);
-      for (p=0;p<npsr;p++)
-	{
-	  readParfile(psr+p,tpar,ttim,1);
-	}
-      //      fclose(fin);
+      readParfileGlobal(psr,npsr,tpar,ttim);
     }
 
 } 
