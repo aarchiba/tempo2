@@ -56,7 +56,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
   double globalParameter;
   double realStatistic;
   double simStatistic;
-  const char *CVS_verNum = "$Revision: 1.5 $";
+  const char *CVS_verNum = "$Revision: 1.6 $";
   double gwAmp,gwAlpha;
   double whiteNoise;
 
@@ -93,7 +93,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
   printf("Graphical Interface: icLimit\n");
   printf("Author:              R. Shannon, G. Hobbs, M. Keith\n");
-  printf("CVS Version:         $Revision: 1.5 $\n");
+  printf("CVS Version:         $Revision: 1.6 $\n");
   printf(" --- type 'h' for help information\n");
 
 
@@ -286,11 +286,11 @@ double getStatPS(pulsar *psr,int npsr,double gwAmp,double gwAlpha,int it,char *c
       formCholeskyMatrixPlugin(covarFunc,x,y,e,psr[p].nobs,uinv);
       nSpec = calcSpectra(uinv,x,y,psr[p].nobs,specX,specY);
       //      TKspectrum(x,y,e,psr[p].nobs,0,0,0,0,0,specType,1,1,specOut,specX,specY,&nSpec,0,0,outY_re,outY_im);
-      sprintf(fname,"psr%s.spec.%d",psr[p].name,it);
-      fout = fopen(fname,"w");
-      for (i=0;i<nSpec;i++)
-	fprintf(fout,"%g %g\n",specX[i],specY[i]);
-      fclose(fout);
+      //      sprintf(fname,"psr%s.spec.%d",psr[p].name,it);
+      //      fout = fopen(fname,"w");
+      //      for (i=0;i<nSpec;i++)
+      //	fprintf(fout,"%g %g\n",specX[i],specY[i]);
+      //      fclose(fout);
 
       s_indv = 0.0; // Individual statistic
       gwAmpYr = gwAmp/pow(86400.0*365.25,gwAlpha);
