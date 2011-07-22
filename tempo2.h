@@ -26,7 +26,7 @@
 
 #ifndef __Tempo2_h
 #define __Tempo2_h
-#define TEMPO2_h_VER "$Revision: 1.26 $"
+#define TEMPO2_h_VER "$Revision: 1.27 $"
 #define TSUN (4.925490947e-6L) // Solar constant for mass calculations.
 #define MAX_FREQ_DERIVATIVES 13    /* F0 -> Fn   where n=10                            */
 #define MAX_DM_DERIVATIVES   10    /* DM0 -> DMn where n=10                            */
@@ -170,6 +170,10 @@ extern int veryFast;    /* Global to run the code fast */
 extern char tempo2MachineType[MAX_FILELEN];
 extern int displayCVSversion; /* Display CVS version */
 
+extern char dcmFile[MAX_FILELEN];
+extern char covarFuncFile[MAX_FILELEN];;
+extern char tempo2_plug_path[32][MAX_STRLEN];
+extern int tempo2_plug_path_len;
 
 typedef struct storePrecision {
   longdouble minPrec;
