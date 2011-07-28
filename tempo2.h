@@ -26,7 +26,7 @@
 
 #ifndef __Tempo2_h
 #define __Tempo2_h
-#define TEMPO2_h_VER "$Revision: 1.27 $"
+#define TEMPO2_h_VER "$Revision: 1.28 $"
 #define TSUN (4.925490947e-6L) // Solar constant for mass calculations.
 #define MAX_FREQ_DERIVATIVES 13    /* F0 -> Fn   where n=10                            */
 #define MAX_DM_DERIVATIVES   10    /* DM0 -> DMn where n=10                            */
@@ -221,7 +221,8 @@ typedef struct observation {
   double      freq;               /* Frequency of observation (in MHz)                          */
   double      freqSSB;            /* Frequency of observation in barycentric frame (in Hz)      */
   double      toaErr;             /* Error on TOA (in us)                                       */
-  double      origErr;            /* Original error on TOA before DM correction (in us)                                       */
+  double      toaDMErr;           /* Error on TOA due to DM (in us)                             */
+  double      origErr;            /* Original error on TOA after reading tim file (in us)       */
   double      phaseOffset;        /* Phase offset                                               */
   char        fname[MAX_FILELEN]; /* Name of data file giving TOA                               */
   char        telID[100];         /* Telescope ID                                               */
