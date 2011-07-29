@@ -26,7 +26,7 @@
 
 #ifndef __Tempo2_h
 #define __Tempo2_h
-#define TEMPO2_h_VER "$Revision: 1.29 $"
+#define TEMPO2_h_VER "$Revision: 1.30 $"
 #define TSUN (4.925490947e-6L) // Solar constant for mass calculations.
 #define MAX_FREQ_DERIVATIVES 13    /* F0 -> Fn   where n=10                            */
 #define MAX_DM_DERIVATIVES   10    /* DM0 -> DMn where n=10                            */
@@ -69,7 +69,7 @@
 #define OBLQ        23.4458333333333333  /* Obliquity of the ecliptic                  */
 #define AULTSC      499.00478364         /* Number of light seconds in 1 AU            */
 #define AU_DIST     1.49598e11           /* 1 AU in m                                  */
-#define DM_CONST    2.41033087e-4        /* Constant used for the dispersion measure   */
+#define DM_CONST    2.41e-4
 #define DM_CONST_SI 7.436e6              /* Dispersion constant in SI units            */
 #define PCM         3.08568025e16        /* one parsec in meters                       */
 #define MASYR2RADS  1.53628185e-16       /* Converts from mas/yr to rad/s              */
