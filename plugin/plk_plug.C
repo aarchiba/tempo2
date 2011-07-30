@@ -245,7 +245,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
   //display chisq?
   int showChisq = 0;
   char flagColour[100];
-  const char *CVS_verNum = "$Revision: 1.38 $";
+  const char *CVS_verNum = "$Revision: 1.39 $";
 
   if (displayCVSversion == 1) CVSdisplayVersion("plk_plug.C","plugin",CVS_verNum);
 
@@ -258,7 +258,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
   printf("Graphical Interface: plk emulator\n");
   printf("Authors:             George Hobbs, J. Verbiest (v4. 3 Aug 2007)\n");
-  printf("CVS Version:         $Revision: 1.38 $\n");
+  printf("CVS Version:         $Revision: 1.39 $\n");
   printf(" --- type 'h' for help information\n");
   /* Obtain the .par and the .tim file from the command line */
 
@@ -506,6 +506,7 @@ void doPlot(pulsar *psr,int npsr,char *gr,double unitFlag, char parFile[][MAX_FI
   longdouble min1,max1;
   longdouble origStart=-1,origFinish=-1;
   double dmean;
+  int   errtype=0;
   int   removeMean=1;
   int   statistics=-1;
   int   bad=0;
@@ -719,7 +720,12 @@ void doPlot(pulsar *psr,int npsr,char *gr,double unitFlag, char parFile[][MAX_FI
 	      strcpy(fitType,"pre-fit");
 	    else if (yplot==2)                       /* Post-fit residual    */
 	      strcpy(fitType,"post-fit");
-	    errBar[count] = psr[0].obsn[i].toaErr;
+	    if (errtype==0)
+		    errBar[count] = psr[0].obsn[i].toaErr;
+	    else if (errtype==1)
+		    errBar[count] = psr[0].obsn[i].origErr;
+	    else 
+		    errBar[count] = psr[0].obsn[i].toaDMErr;
 	    if (bad==0) count++;	    
 	  }
       }
@@ -1159,6 +1165,21 @@ void doPlot(pulsar *psr,int npsr,char *gr,double unitFlag, char parFile[][MAX_FI
 	    plotErr+=1;
 	    if (plotErr==3) plotErr=0;
 	  }
+	else if (key=='\''){
+		errtype++;
+		switch (errtype){
+			case 1:
+				printf("Orig Error\n");
+				break;
+			case 2:
+				printf("DM Error\n");
+				break;
+			default:
+				printf("Combined Error\n");
+				errtype=0;
+				break;
+		}
+	}
 	else if (key=='P') /* New parameter file */
 	  {
 	    textOutput(psr,npsr,0,0,0,1,"");
