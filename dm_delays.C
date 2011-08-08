@@ -42,7 +42,7 @@ void dm_delays(pulsar *psr,int npsr,int p,int i,double delt,double dt_SSB)
   double rsa[3],pos[3],vobs[3],yrs;
   double dmDot;
   int j,k;
-  const char *CVS_verNum = "$Revision: 1.15 $";
+  const char *CVS_verNum = "$Revision: 1.16 $";
 
   if (displayCVSversion == 1) CVSdisplayVersion("dm_delays.C","dm_delays()",CVS_verNum);
   if (debugFlag==1) printf("In dm_delays with pulsar %d; number of obs = %d\n",p,psr[p].nobs);
@@ -109,19 +109,47 @@ void dm_delays(pulsar *psr,int npsr,int p,int i,double delt,double dt_SSB)
       if (psr[p].param[param_dmmodel].paramSet[0] == 1)
 	{
 	  double m,c;
-	  static int t=1;
+	  static int t=0xFFFF;
 	  dmval=0;
-	 
-	  if (psr[p].param[param_dm].paramSet[0] == 1 && t==1)
-	    {
-	      printf("WARNING: Using DMMODEL value for dispersion measure instead of the DM parameter\n");
-	      t=0;
-	    }
+	  //double meanDM=(double)psr[p].param[param_dm].val[0];
+	  double meanDM=getParameterValue(psr,param_dmmodel,0);
+
+	  if (psr[p].param[param_dm].paramSet[0] == 1 && psr->param[param_dmmodel].linkTo[0] != param_dm)
+	  {
+		  if(t & 0x000F){
+			  printf("WARNING: Using DMMODEL value for dispersion measure instead of the DM parameter\n");
+			  printf("         Please set 'DMMODEL DM' in the par file rather than specifying a value\n");
+			  t= t & 0xFFF0;
+		  }
+		  //	      psr[p].param[param_dmmodel].val[0]=psr[p].param[param_dm].val[0];
+	  }
+
+	  // set the mean DMOFF to zero.
+	  if(t&0x00F0){
+		  double mean_dmoff=0;
+		  for (k=0;k<psr[p].dmoffsNum;k++){
+			  mean_dmoff+=psr[p].dmoffsDM[k];
+		  }
+		  mean_dmoff /= (double)psr[p].dmoffsNum;
+		  if(mean_dmoff > 1e-12){
+			  printf("WARNING: Mean DMOFF = %lg\n",mean_dmoff);
+			  for(k=0;i < psr[p].nconstraints; k++){
+				  if (psr[p].constraints[k]==constraint_dmmodel_mean){
+					  printf("         Removing mean to keep DMMODEL constraint correct.\n");
+					  for (k=0;k<psr[p].dmoffsNum;k++){
+						  psr[p].dmoffsDM[k] -= mean_dmoff;
+					  }
+					  break;
+				  }
+			  }
+		  }
+		  t = t & 0xFF0F;
+	  }
 
 	  if ((double)psr[p].obsn[i].sat < psr[p].dmoffsMJD[0])
-	    dmval = (double)psr[p].param[param_dmmodel].val[0] + psr[p].dmoffsDM[0];
+	    dmval = meanDM + psr[p].dmoffsDM[0];
 	  else if ((double)psr[p].obsn[i].sat > psr[p].dmoffsMJD[psr[p].dmoffsNum-1])
-	    dmval = (double)psr[p].param[param_dmmodel].val[0]+psr[p].dmoffsDM[psr[p].dmoffsNum-1];
+	    dmval = meanDM+psr[p].dmoffsDM[psr[p].dmoffsNum-1];
 	  else
 	    {
 	      for (k=0;k<psr[p].dmoffsNum-1;k++)
@@ -135,7 +163,7 @@ void dm_delays(pulsar *psr,int npsr,int p,int i,double delt,double dt_SSB)
 		      // made here then these changes should be made throughout!
 		      m = (psr[p].dmoffsDM[k]-psr[p].dmoffsDM[k+1])/(psr[p].dmoffsMJD[k]-psr[p].dmoffsMJD[k+1]);
 		      c = psr[p].dmoffsDM[k]-m*psr[p].dmoffsMJD[k];
-		      dmval = m*(double)psr[p].obsn[i].sat+c + (double)psr[p].param[param_dmmodel].val[0];
+		      dmval = m*(double)psr[p].obsn[i].sat+c + meanDM;
 		      break;
 		    }
 		}
