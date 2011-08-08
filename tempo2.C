@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
   FILE *alias;
   char **commandLine;
   clock_t startClock,endClock;
-  const char *CVS_verNum = "$Revision: 1.19 $";
+  const char *CVS_verNum = "$Revision: 1.20 $";
 
 
   printf("This program comes with ABSOLUTELY NO WARRANTY.\n");
@@ -298,6 +298,22 @@ int main(int argc, char *argv[])
 //	    fprintf(stderr, "dlerror() = %s\n",dlerror());
 	    return -1;
 	  }
+
+	  /*
+	   * Check that the plugin is compiled against the same version of tempo2.h
+	   */
+	  char ** pv  = (char**)dlsym(module, "plugVersionCheck");
+	  if(pv!=NULL){
+		  // there is a version check for this plugin
+		  if(strcmp(TEMPO2_h_VER,*pv)){
+			  fprintf(stderr, "[error]: Plugin version mismatch\n");
+			  fprintf(stderr, " '%s' != '%s'\n",TEMPO2_h_VER,*pv);
+			  fprintf(stderr, " Please recompile plugin against same tempo2 version!\n");
+			  dlclose(module);
+			  return -1;
+		  }
+	  }
+
 	  entry = (char*(*)(int,char **,pulsar *,int *))dlsym(module, "graphicalInterface");
 	  if( entry == NULL ) {
 	    dlclose(module);
@@ -516,6 +532,22 @@ int main(int argc, char *argv[])
 		    fprintf(stderr, "[error]: dlopen() failed while resolving symbols.\n" );
 		    return -1;
 		  }
+		  /*
+		   * Check that the plugin is compiled against the same version of tempo2.h
+		   */
+		  char ** pv  = (char**)dlsym(module, "plugVersionCheck");
+		  if(pv!=NULL){
+			  // there is a version check for this plugin
+			  if(strcmp(TEMPO2_h_VER,*pv)){
+				  fprintf(stderr, "[error]: Plugin version mismatch\n");
+				  fprintf(stderr, " '%s' != '%s'\n",TEMPO2_h_VER,*pv);
+				  fprintf(stderr, " Please recompile plugin against same tempo2 version!\n");
+				  dlclose(module);
+				  return -1;
+			  }
+		  }
+
+
 		  entry = (char*(*)(int,char **,pulsar *,int))dlsym(module, "tempoOutput");
 		  if( entry == NULL ) {
 		    dlclose(module);

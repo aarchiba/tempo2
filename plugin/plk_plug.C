@@ -245,7 +245,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
   //display chisq?
   int showChisq = 0;
   char flagColour[100];
-  const char *CVS_verNum = "$Revision: 1.39 $";
+  const char *CVS_verNum = "$Revision: 1.40 $";
 
   if (displayCVSversion == 1) CVSdisplayVersion("plk_plug.C","plugin",CVS_verNum);
 
@@ -258,7 +258,7 @@ extern "C" int graphicalInterface(int argc,char *argv[],pulsar *psr,int *npsr)
 
   printf("Graphical Interface: plk emulator\n");
   printf("Authors:             George Hobbs, J. Verbiest (v4. 3 Aug 2007)\n");
-  printf("CVS Version:         $Revision: 1.39 $\n");
+  printf("CVS Version:         $Revision: 1.40 $\n");
   printf(" --- type 'h' for help information\n");
   /* Obtain the .par and the .tim file from the command line */
 
@@ -3982,3 +3982,6 @@ double lmst2(double mjd,double olong,double *tsid,double *tsid_der)
   *tsid_der = sdd;
   return 0.0;
 }
+
+
+char * plugVersionCheck = TEMPO2_h_VER;
