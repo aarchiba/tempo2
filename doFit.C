@@ -51,7 +51,7 @@ void doFit(pulsar *psr,int npsr,int writeModel)
   double *error;
   double tol = 1.0e-40;  /* Tolerence for singular value decomposition routine */
   double newStart=-1.0,newFinish=-1.0;
-  const char *CVS_verNum = "$Revision: 1.29 $";
+  const char *CVS_verNum = "$Revision: 1.30 $";
 
   if (displayCVSversion == 1) CVSdisplayVersion("doFit.C","doFit()",CVS_verNum);
   if (debugFlag==1) printf("Entering doFit\n");
@@ -1590,7 +1590,7 @@ void formCholeskyMatrix(double *c,double *resx,double *resy,double *rese,int np,
  */
 double getConstraintDeriv(pulsar *psr,int iconstraint,int i,int k){
 	int order=0;
-	switch(psr->constraints[iconstraint]){
+		switch(psr->constraints[iconstraint]){
 		case constraint_dmmodel_mean:
 			return consFunc_dmmodel_mean(psr,i,k);
 
@@ -1604,7 +1604,7 @@ double getConstraintDeriv(pulsar *psr,int iconstraint,int i,int k){
 			return consFunc_dmmodel_cw(psr,i,k,order);
 		default:
 			return 0;
-	}
+			}
 }
 
 
