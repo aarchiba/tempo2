@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 #include "tempo2.h"
 #include "jpleph.h"
 #include "ifteph.h"
@@ -63,7 +64,7 @@ void readEphemeris(pulsar *psr,int npsr,int addEphemNoise)
   double one_au;
   int err_code;
   int i,p;
-  const char *CVS_verNum = "$Revision: 1.8 $";
+  const char *CVS_verNum = "$Revision: 1.9 $";
 
   if (displayCVSversion == 1) CVSdisplayVersion("readEphemeris.C","readEphemeris()",CVS_verNum);
 
