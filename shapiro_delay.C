@@ -37,7 +37,7 @@ void shapiro_delay(pulsar *psr,int npsr,int p,int i,double delt,double dt_SSB)
 {
   double delay,ctheta,r,rsa[3],pospos;
   int j,k;
-  const char *CVS_verNum = "$Revision: 1.5 $";
+  const char *CVS_verNum = "$Revision: 1.6 $";
 
   if (displayCVSversion == 1) CVSdisplayVersion("shapiro_delay.C","shapiro_delay()",CVS_verNum);
   
@@ -62,7 +62,10 @@ void shapiro_delay(pulsar *psr,int npsr,int p,int i,double delt,double dt_SSB)
 	{
 	  /* Require vector from solar system body (e.g. Sun) to observatory at the time of the 
 	   * closest approach of the photon to that body */
-	  rsa[j] = -psr[p].obsn[i].sun_ssb[j] + psr[p].obsn[i].earth_ssb[j] + psr[p].obsn[i].observatory_earth[j]; 
+	  if (strcmp(psr[p].obsn[i].telID,"STL_FBAT")==0)
+	    rsa[j] = -psr[p].obsn[i].sun_ssb[j] + psr[p].obsn[i].observatory_earth[j]; 
+	  else
+	    rsa[j] = -psr[p].obsn[i].sun_ssb[j] + psr[p].obsn[i].earth_ssb[j] + psr[p].obsn[i].observatory_earth[j]; 
 
 	  /*	  rsa[j] = -psr[p].obsn[i].sun_ssb[j] + psr[p].obsn[i].earthMoonBary_ssb[j] -
 		  psr[p].obsn[i].earthMoonBary_earth[j] + psr[p].obsn[i].observatory_earth[j]; */

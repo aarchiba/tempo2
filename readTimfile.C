@@ -57,7 +57,7 @@ void readTimfile(pulsar *psr,char timFile[][MAX_FILELEN],int npsr)
   int p,i;
   int jumpVal=0;
   FILE *fin;
-  const char *CVS_verNum = "$Revision: 1.14 $";
+  const char *CVS_verNum = "$Revision: 1.15 $";
 
   if (displayCVSversion == 1) CVSdisplayVersion("readTimfile.C","readTimfile()",CVS_verNum);
 
@@ -387,6 +387,11 @@ void readTim(char *timname,pulsar *psr,int *jumpVal)
 	      psr->obsn[nObs].delayCorr=0;
 	    }
 	  else if (strcmp(psr->obsn[nObs].telID,"STL")==0)
+	    {
+	      psr->obsn[nObs].clockCorr=0;  /* don't do clock corrections */
+	      psr->obsn[nObs].delayCorr=1;
+	    }
+	  else if (strcmp(psr->obsn[nObs].telID,"STL_FBAT")==0)
 	    {
 	      psr->obsn[nObs].clockCorr=0;  /* don't do clock corrections */
 	      psr->obsn[nObs].delayCorr=1;
