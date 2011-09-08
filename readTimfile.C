@@ -57,7 +57,7 @@ void readTimfile(pulsar *psr,char timFile[][MAX_FILELEN],int npsr)
   int p,i;
   int jumpVal=0;
   FILE *fin;
-  const char *CVS_verNum = "$Revision: 1.15 $";
+  const char *CVS_verNum = "$Revision: 1.16 $";
 
   if (displayCVSversion == 1) CVSdisplayVersion("readTimfile.C","readTimfile()",CVS_verNum);
 
@@ -253,6 +253,14 @@ void readTim(char *timname,pulsar *psr,int *jumpVal)
 				  strcpy(strchr(line+i,' '),"");
 				}
 			      strcpy(psr->obsn[nObs].flagVal[psr->obsn[nObs].nFlags],line+i);
+			      // Check for offset to site arrival time
+			      if (strcmp(psr->obsn[nObs].flagID[psr->obsn[nObs].nFlags],"-addsat")==0)
+				{
+				  double offVal;
+				  sscanf(psr->obsn[nObs].flagVal[psr->obsn[nObs].nFlags],"%lf",&offVal);
+				  psr->obsn[nObs].sat += (offVal/86400.0L);
+				}
+
 			      // Check for DM changes
 			      if (strcmp(psr->obsn[nObs].flagID[psr->obsn[nObs].nFlags],"-dme")==0)
 				{
