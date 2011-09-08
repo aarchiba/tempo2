@@ -654,13 +654,11 @@ void checkLine(pulsar *psr,char *str,FILE *fin,parameter *elong, parameter *elat
   else if (strstr(str,"IFUNC")!=NULL || strstr(str,"ifunc")!=NULL)
     {
       int number;
-      printf("Setting IFUNC\n");
       /* Obtain parameter number */
       sscanf(str+5,"%d",&number);
 
       fscanf(fin,"%lf %lf %lf",&psr->ifuncT[number-1],&psr->ifuncV[number-1],&psr->ifuncE[number-1]);
       if (psr->ifuncN < number) psr->ifuncN = number;
-      printf("IFUNC n = %d\n",psr->ifuncN);
     }
   /* ---------------- */
   /* Phase jumps      */
@@ -1027,7 +1025,7 @@ void readParfile(pulsar *psr,char parFile[][MAX_FILELEN],char timFile[][MAX_FILE
   char str[1000];
   parameter elong,elat;	
   int noread=0,endit;
-  const char *CVS_verNum = "$Revision: 1.26 $";
+  const char *CVS_verNum = "$Revision: 1.27 $";
 
   if (displayCVSversion == 1) CVSdisplayVersion("readParfile.C","readParfile()",CVS_verNum);
 

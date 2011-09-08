@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
   FILE *alias;
   char **commandLine;
   clock_t startClock,endClock;
-  const char *CVS_verNum = "$Revision: 1.21 $";
+  const char *CVS_verNum = "$Revision: 1.22 $";
 
 
   printf("This program comes with ABSOLUTELY NO WARRANTY.\n");

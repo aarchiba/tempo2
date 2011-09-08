@@ -51,7 +51,7 @@ void doFit(pulsar *psr,int npsr,int writeModel)
   double *error;
   double tol = 1.0e-40;  /* Tolerence for singular value decomposition routine */
   double newStart=-1.0,newFinish=-1.0;
-  const char *CVS_verNum = "$Revision: 1.31 $";
+  const char *CVS_verNum = "$Revision: 1.32 $";
 
   if (displayCVSversion == 1) CVSdisplayVersion("doFit.C","doFit()",CVS_verNum);
   if (debugFlag==1) printf("Entering doFit\n");
@@ -1569,6 +1569,7 @@ void formCholeskyMatrix(double *c,double *resx,double *resy,double *rese,int np,
   u= (double **)malloc(sizeof(double *)*(np+1));
   cholp  = (double *)malloc(sizeof(double)*(np+1));  // Was ndays
 
+  
   for (i=0;i<np+1;i++)
     {
       m[i] = (double *)malloc(sizeof(double)*(np+1));
@@ -1590,6 +1591,7 @@ void formCholeskyMatrix(double *c,double *resx,double *resy,double *rese,int np,
 	  printf("\n");
 	}
     }
+  
   // Insert the covariance which depends only on the time difference.
   // Linearly interpolate between elements on the covariance function because
   // valid covariance matrix must have decreasing off diagonal elements.
@@ -1624,13 +1626,14 @@ void formCholeskyMatrix(double *c,double *resx,double *resy,double *rese,int np,
   if (debug==1)
     {
       printf("m = \n\n");
-      for (i=0;i<5;i++)
+      for (i=np-5;i<np;i++)
 	{ 
-	  for (j=0;j<5;j++) printf("%10g ",m[i][j]); 
+	  for (j=np-5;j<np;j++) printf("%10g ",m[i][j]); 
 	  printf("\n");
 	}
     }
 
+  
   // Do the Cholesky
   TKcholDecomposition(m,np,cholp);
   // Now calculate uinv
