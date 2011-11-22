@@ -55,7 +55,7 @@ void formResiduals(pulsar *psr,int npsr,int removeMean)
    int time=0;
    int ntrk=0;
    int gotit=0;
-   const char *CVS_verNum = "$Revision: 1.21 $";
+   const char *CVS_verNum = "$Revision: 1.22 $";
    
    if (displayCVSversion == 1) CVSdisplayVersion("formResiduals.C","formResiduals()",CVS_verNum);
 
@@ -585,11 +585,17 @@ void formResiduals(pulsar *psr,int npsr,int removeMean)
 
 	       for (k=0;k<psr[p].obsn[i].nFlags;k++)
 		 {
-		   if (strcmp(psr[p].obsn[i].flagID[k],"-radd")==0)
+		   if (strcmp(psr[p].obsn[i].flagID[k],"-radd")==0) // Add in extra time
 		     {
 		       sscanf(psr[p].obsn[i].flagVal[k],"%Lf",&extra);
 		       /* psr[p].obsn[i].residual+=extra; */
 		       phase5[i]+=(extra*psr[p].param[param_f].val[0]);
+		     }
+		   if (strcmp(psr[p].obsn[i].flagID[k],"-padd")==0) // Add in extra phase
+		     {
+		       sscanf(psr[p].obsn[i].flagVal[k],"%Lf",&extra);
+		       /* psr[p].obsn[i].residual+=extra; */
+		       phase5[i]+=(extra);
 		     }
 		 }
 	     }
