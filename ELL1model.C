@@ -64,7 +64,7 @@ double ELL1model(pulsar *psr,int p,int ipos,int param)
   double d2bar,torb,Csigma,Cx,Ceps1,Ceps2,Cm2,Csi,ct,t0asc,pbdot,xpbdot,x,xdot,am2;
   int norbits;
   double SUNMASS = 4.925490947e-6;
-  const char *CVS_verNum = "$Revision: 1.5 $";
+  const char *CVS_verNum = "$Revision: 1.6 $";
 
   if (displayCVSversion == 1) CVSdisplayVersion("ELL1model.C","ELL1model()",CVS_verNum);
 
@@ -177,8 +177,9 @@ void updateELL1(pulsar *psr,double val,double err,int pos)
       psr->param[param_pb].err[0]  = err/SECDAY;
     }
   else if (pos==param_a1 || pos==param_eps1 || pos==param_eps2 || pos==param_tasc
-	   || pos==param_sini || pos == param_m2 || pos==param_eps1dot ||
-	   pos==param_eps2dot)
+	   || pos==param_sini || pos == param_m2 
+       || pos==param_eps1dot || pos==param_eps2dot
+       || pos==param_a1dot)
     {
       psr->param[pos].val[0] += val;
       psr->param[pos].err[0]  = err;
