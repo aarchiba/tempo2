@@ -186,5 +186,7 @@ fi
 
 
 
-
-
+AC_MSG_NOTICE(Fortran compiler is $F77 $FFLAGS)
+AC_MSG_NOTICE(C compiler is $CC $CFLAGS)
+AC_MSG_NOTICE(C++ compiler is $CXX $CXXFLAGS)
+AC_MSG_NOTICE(Global linking flags are $LDFLAGS)

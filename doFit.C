@@ -1515,6 +1515,45 @@ double getParamDeriv(pulsar *psr,int ipos,double x,int i,int k)
 	*/
 //      if(fabs(af2-afunc) > 1e-2)printf("XX %lf\t%lf\t%lf\n",sat,af2,afunc);
     }
+  else if (i==param_ifunc) /* Whitening procedure using interpolated function */
+    {
+      double dt = (x + psr->param[param_pepoch].val[0]) - psr->ifuncT[k];
+      double tt = M_PI/(psr->ifuncT[1] - psr->ifuncT[0])*dt;
+      double t1;
+      double t2=0.0;
+      int l;
+
+      t1 = sin(tt)/tt;
+      /*      for (l=0;l<psr->ifuncN;l++)
+	      {
+	      dt = (x + (double)psr->param[param_pepoch].val[0]) - psr->ifuncT[l];
+	      tt = M_PI/(psr->ifuncT[1] - psr->ifuncT[0])*dt;
+	      t2+=sin(tt)/tt;
+	      }*/
+
+      afunc = t1;
+    }
+  else if (i==param_dmval)
+    {
+      double ti = (double)psr->obsn[ipos].sat;
+      double tm1 = (double)psr->dmvalsMJD[k-1];
+      double t0 = (double)psr->dmvalsMJD[k];
+      double t1 = (double)psr->dmvalsMJD[k+1];
+      double d0 = (double)psr->dmvalsDM[k];
+      double d1 = (double)psr->dmvalsDM[k+1];
+      if (ti >= t0 && ti < t1)
+	{
+	  afunc = 1.0/(DM_CONST*powl(psr->obsn[ipos].freqSSB/1.0e6,2));      
+	  afunc*=1.0-(1.0/(t1-t0))*(ti-t0);
+	}
+      else if (ti >= tm1 && ti < t0)
+	{
+	  afunc = 1.0/(DM_CONST*powl(psr->obsn[ipos].freqSSB/1.0e6,2));      
+	  afunc*=(1.0/(t0-tm1))*(ti-tm1);
+	}
+      else
+	afunc = 0;
+    }
   else if (i==param_dmassplanet)
     {
       afunc = dotproduct(psr->posPulsar,psr->obsn[ipos].planet_ssb[k]);
@@ -1850,7 +1889,6 @@ void formCholeskyMatrix(double *c,double *resx,double *resy,double *rese,int np,
   u= (double **)malloc(sizeof(double *)*(np+1));
   cholp  = (double *)malloc(sizeof(double)*(np+1));  // Was ndays
 
-  
   for (i=0;i<np+1;i++)
     {
       m[i] = (double *)malloc(sizeof(double)*(np+1));

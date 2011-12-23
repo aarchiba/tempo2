@@ -456,6 +456,9 @@ typedef struct pulsar {
   double T2globalEfac;
   
 
+  double ifuncT[MAX_IFUNC], ifuncV[MAX_IFUNC],ifuncE[MAX_IFUNC];
+  int    ifuncN;
+
   /* Which fit function are we using */
   char fitFunc[MAX_FILELEN];
 

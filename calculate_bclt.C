@@ -54,8 +54,7 @@ void calculate_bclt(pulsar *psr,int npsr)
   for (p=0;p<npsr;p++)
     {
       if (psr[p].correctTroposphere==1) {
-	//	printf("Correcting troposphere\n");
-	compute_tropospheric_delays(&psr[p], 1);
+        compute_tropospheric_delays(&psr[p], 1);
       }
 
       for (i=0;i<psr[p].nobs;i++)	
