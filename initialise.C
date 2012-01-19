@@ -487,8 +487,6 @@ void allocateMemory(pulsar *psr, int realloc)
       else if (i==param_tel_dx) psr->param[i].aSize = MAX_TEL_DX;
       else if (i==param_tel_dy) psr->param[i].aSize = MAX_TEL_DY;
       else if (i==param_tel_dz) psr->param[i].aSize = MAX_TEL_DZ;
-      else if (i==param_fbjn || i==param_tfbjn)
-        psr->param[i].aSize = MAX_BTX_JUMPS;
       else if (i==param_fbn || i==param_xdotn)
         psr->param[i].aSize = MAX_BTX_DERIVS;
       else psr->param[i].aSize = 1;
